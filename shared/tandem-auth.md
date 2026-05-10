@@ -10,19 +10,37 @@ Reference: <https://docs.tandem.ac/engine-authentication-for-agents/>.
 
 ## 1. Get the engine running
 
+Two supported install paths. Pick one.
+
+### A. Engine / headless
+
 ```bash
+npm install -g @frumu/tandem
 tandem-engine serve --hostname 127.0.0.1 --port 39731
 ```
 
-The default URL the plugin uses is `http://127.0.0.1:39731`. Override
-via `TANDEM_BASE_URL`.
+`@frumu/tandem` ships both the `tandem` master CLI and the `tandem-engine`
+binary. Use this on servers, CI, or any machine that doesn't want the web UI.
 
-Healthcheck:
+### B. Control panel
 
 ```bash
-curl http://127.0.0.1:39731/global/health
-# → {"ok": true, ...}
+npm install -g @frumu/tandem       # provides the `tandem` master CLI
+tandem install panel               # installs @frumu/tandem-panel
+tandem panel init                  # provisions the panel + engine + token
 ```
+
+The panel is `@frumu/tandem-panel`, a web control center for the same
+engine the plugin talks to.
+
+> **Legacy compatibility.** Older docs reference a standalone `tandem-setup`
+> CLI from `@frumu/tandem-panel`. Use the `tandem install panel` flow above
+> unless docs you trust say otherwise for your version.
+
+### Verify
+
+The default URL the plugin uses is `http://127.0.0.1:39731`. Override via
+`TANDEM_BASE_URL`.
 
 When using the bundled SDK:
 
@@ -31,36 +49,53 @@ const client = new TandemClient({ baseUrl, token });
 await client.health();
 ```
 
+In Codex, the fastest end-to-end check is `/tandem-doctor`.
+
 ---
 
 ## 2. Provide the token
 
-Three verified ways. Pick one.
+The plugin and the bundled `@frumu/tandem-client` SDK look for the token
+in this order. Whichever one resolves first wins; pick the one that
+matches your setup.
 
-### Option A — env var (simplest)
-
-```bash
-export TANDEM_API_TOKEN="$(tandem-engine token generate)"
-```
-
-Or copy from the control panel's Settings → Engine Auth panel.
-
-### Option B — token file
+### Order 1 — `TANDEM_API_TOKEN` env var (simplest)
 
 ```bash
-tandem-engine token generate > ~/.tandem/engine.token
-chmod 600 ~/.tandem/engine.token
-export TANDEM_API_TOKEN_FILE=~/.tandem/engine.token
+export TANDEM_API_TOKEN="<token>"
 ```
 
-Useful with the OS keychain or sealed-secrets workflows. The Tandem SDK
-reads the file lazily, so the token never has to live in process env.
+Copy from the control panel's Settings → Engine Auth view, or from
+whatever onboarding command your installer ran.
 
-### Option C — control-panel-injected env var
+### Order 2 — `TANDEM_API_TOKEN_FILE` env var
 
-Set `TANDEM_CONTROL_PANEL_ENGINE_TOKEN` if the control panel manages
-your engine. The SDK falls back to this when `TANDEM_API_TOKEN` and
-`TANDEM_API_TOKEN_FILE` are unset.
+```bash
+export TANDEM_API_TOKEN_FILE="/path/your/installer/chose"
+```
+
+The SDK reads the file lazily, so the token never has to live in process
+env. Path is **whatever the installer chose** — the plugin does not assume
+a fixed location. Check the output of `tandem panel init` (panel install)
+or your engine-bring-up script (headless install) for the canonical path.
+
+### Order 3 — SDK `token` constructor option
+
+```ts
+import { TandemClient } from "@frumu/tandem-client";
+
+const client = new TandemClient({ baseUrl, token });
+```
+
+The helper scripts in `scripts/` use this option after loading `.env`,
+which means anything you put in `TANDEM_API_TOKEN` (or that resolves via
+`TANDEM_API_TOKEN_FILE`) flows through transparently.
+
+### Discovery
+
+If you're not sure where your token lives, run `/tandem-setup` in Codex.
+It walks through the discovery order and points at the canonical docs —
+without assuming a specific path.
 
 ---
 
@@ -89,8 +124,12 @@ fetch(`${baseUrl}/global/health`, {
 npm run healthcheck
 ```
 
-Runs `scripts/tandem-api-healthcheck.ts`. It exits 0 with `ok` printed
-when auth and connectivity are good.
+Runs `scripts/tandem-api-healthcheck.ts`. It resolves the token via the
+same order as the SDK (`TANDEM_API_TOKEN`, then `TANDEM_API_TOKEN_FILE`)
+and exits 0 with `ok` printed when auth and connectivity are good.
+
+In a Codex session the equivalent (with structured output and next-action
+hints) is `/tandem-doctor`.
 
 ---
 
@@ -101,7 +140,7 @@ when auth and connectivity are good.
 | `401 Unauthorized` | No token sent | Check env var or header. |
 | `401` despite token | Token rotated or expired | Regenerate with `tandem-engine token generate`. |
 | `403 Forbidden` | Endpoint requires a different scope (e.g. control-panel-only) | Use the control panel or escalate scope. |
-| `connection refused` | Engine not running | Start with `tandem-engine serve …`. |
+| `connection refused` | Engine not running | Start with `tandem-engine serve …` (headless) or `tandem panel init` (panel). |
 | Engine logs warn `unsafe-no-token` | `TANDEM_UNSAFE_NO_API_TOKEN=1` is set | Unset for any non-trusted-local-dev use. |
 
 ---
