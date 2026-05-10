@@ -23,26 +23,33 @@ Use this when:
 
 ## Behaviour
 
-### Step 1 — Show the two supported install paths
+### Step 1 — Show the supported install paths
 
 State both options. Do not pick one for the user unless they ask.
 
-**A. Engine / headless**
+**A. CLI binaries / headless**
 
 ```bash
-npm install -g @frumu/tandem
+npm install -g @frumu/tandem @frumu/tandem-tui
+tandem doctor
+tandem engine status
 tandem-engine serve --hostname 127.0.0.1 --port 39731
 ```
 
-`@frumu/tandem` provides the `tandem` master CLI and the `tandem-engine`
-binary. Best for servers, CI, or anywhere the web UI isn't wanted.
+`@frumu/tandem` provides the `tandem` master CLI and direct
+`tandem-engine` runtime. `@frumu/tandem-tui` provides `tandem-tui`.
+The `tandem` master CLI is where checks like `tandem doctor`,
+`tandem status`, `tandem service status`, `tandem engine status`, and
+`tandem panel ...` come from. Best for servers, CI, or terminal-first
+local use.
 
 **B. Control panel**
 
 ```bash
-npm install -g @frumu/tandem       # provides the `tandem` master CLI
+npm install -g @frumu/tandem @frumu/tandem-tui
 tandem install panel               # installs @frumu/tandem-panel
 tandem panel init                  # provisions panel + engine + token
+tandem panel open                  # optional: open the web admin
 ```
 
 Best for local dev where the user also wants the web UI.
@@ -96,10 +103,13 @@ Make this separation explicit:
 
 Recommended setup path:
 
-1. Open the Tandem control panel.
-2. Go to Settings → Providers / Models (wording may vary by Tandem
-   version).
-3. Connect the provider account or enter the provider key there.
+1. Run Tandem's first-run checks: `tandem doctor`, `tandem status`,
+   `tandem service status`, and `tandem engine status`.
+2. Configure provider credentials through the TUI setup flow,
+   environment/config, or the control panel's Settings → Providers /
+   Models area.
+3. Common provider env vars include `OPENAI_API_KEY`,
+   `ANTHROPIC_API_KEY`, and `OPENROUTER_API_KEY`.
 4. Choose a default provider and model.
 5. Re-run `/tandem-doctor`.
 

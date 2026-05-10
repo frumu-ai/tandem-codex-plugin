@@ -83,22 +83,28 @@ Codex caches the plugin under `~/.codex/plugins/cache/<marketplace>/<plugin>/<ve
 
 The plugin doesn't bundle the engine. Pick one of two supported paths:
 
-### A. Engine / headless
+### A. CLI binaries / headless
 
 ```bash
-npm install -g @frumu/tandem
+npm install -g @frumu/tandem @frumu/tandem-tui
+tandem doctor
+tandem engine status
 tandem-engine serve --hostname 127.0.0.1 --port 39731
 ```
 
-`@frumu/tandem` ships both the `tandem` master CLI and the `tandem-engine`
-binary. Use this path on servers, in CI, or when you don't want the web UI.
+`@frumu/tandem` ships the `tandem` master CLI and direct
+`tandem-engine` runtime. `@frumu/tandem-tui` ships `tandem-tui`. Use
+this path on servers, in CI, or when you want terminal-first setup.
+You can start the engine through the master CLI (`tandem serve ...`) or
+the direct runtime (`tandem-engine serve ...`).
 
 ### B. Control panel (recommended for local dev)
 
 ```bash
-npm install -g @frumu/tandem       # provides the `tandem` master CLI
+npm install -g @frumu/tandem @frumu/tandem-tui
 tandem install panel               # installs @frumu/tandem-panel
 tandem panel init                  # provisions the panel + engine + token
+tandem panel open                  # optional: open the web admin
 ```
 
 The control panel ([`@frumu/tandem-panel`](https://www.npmjs.com/package/@frumu/tandem-panel))
@@ -110,9 +116,10 @@ against the same engine the plugin talks to.
 > above unless documentation you trust says otherwise for your version.
 
 After either path the engine listens on `TANDEM_BASE_URL` (default
-`http://127.0.0.1:39731`). Discover where the installer wrote the token by
-running `/tandem-setup` in Codex, and verify everything end-to-end with
-`/tandem-doctor`.
+`http://127.0.0.1:39731`). Run Tandem's first-run checks (`tandem doctor`,
+`tandem status`, `tandem service status`, `tandem engine status`), then
+discover where the installer wrote the token by running `/tandem-setup`
+in Codex and verify everything end-to-end with `/tandem-doctor`.
 
 ## 6. Configure plugin auth
 
@@ -150,8 +157,10 @@ Codex authentication is separate from Tandem provider authentication.
 Logging into Codex does not automatically give the Tandem engine access
 to OpenAI, Anthropic, OpenRouter, or any other model provider.
 
-For local dev, use the Tandem control panel's Settings → Providers /
-Models area to connect a provider and choose a default model. The SDK
+For local dev, use the Tandem TUI setup flow, environment/config, or the
+control panel's Settings → Providers / Models area to connect a provider
+and choose a default model. Common provider env vars include
+`OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, and `OPENROUTER_API_KEY`. The SDK
 surface is also available for trusted local setup scripts:
 
 ```ts

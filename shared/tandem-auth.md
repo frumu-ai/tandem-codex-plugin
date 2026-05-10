@@ -12,22 +12,28 @@ Reference: <https://docs.tandem.ac/engine-authentication-for-agents/>.
 
 Two supported install paths. Pick one.
 
-### A. Engine / headless
+### A. CLI binaries / headless
 
 ```bash
-npm install -g @frumu/tandem
+npm install -g @frumu/tandem @frumu/tandem-tui
+tandem doctor
+tandem engine status
 tandem-engine serve --hostname 127.0.0.1 --port 39731
 ```
 
-`@frumu/tandem` ships both the `tandem` master CLI and the `tandem-engine`
-binary. Use this on servers, CI, or any machine that doesn't want the web UI.
+`@frumu/tandem` ships the `tandem` master CLI and direct
+`tandem-engine` runtime. `@frumu/tandem-tui` ships `tandem-tui`. Use
+this on servers, CI, or any machine that wants terminal-first setup.
+The engine can be started through `tandem serve ...` or directly with
+`tandem-engine serve ...`.
 
 ### B. Control panel
 
 ```bash
-npm install -g @frumu/tandem       # provides the `tandem` master CLI
+npm install -g @frumu/tandem @frumu/tandem-tui
 tandem install panel               # installs @frumu/tandem-panel
 tandem panel init                  # provisions the panel + engine + token
+tandem panel open                  # optional: open the web admin
 ```
 
 The panel is `@frumu/tandem-panel`, a web control center for the same
@@ -174,7 +180,7 @@ hints) is `/tandem-doctor`.
 | `401 Unauthorized` | No token sent | Check env var or header. |
 | `401` despite token | Token rotated or expired | Regenerate with `tandem-engine token generate`. |
 | `403 Forbidden` | Endpoint requires a different scope (e.g. control-panel-only) | Use the control panel or escalate scope. |
-| `connection refused` | Engine not running | Start with `tandem-engine serve …` (headless) or `tandem panel init` (panel). |
+| `connection refused` | Engine not running | Start with `tandem serve ...` or `tandem-engine serve ...`; for panel setup run `tandem panel init`. |
 | Engine logs warn `unsafe-no-token` | `TANDEM_UNSAFE_NO_API_TOKEN=1` is set | Unset for any non-trusted-local-dev use. |
 
 ---

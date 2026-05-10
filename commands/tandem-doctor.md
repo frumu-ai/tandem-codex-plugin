@@ -90,10 +90,12 @@ authentication does not satisfy this requirement.
   network errors. They are the user's most actionable signal.
 - For each failed check, print one concrete next action:
   - Missing token: `Run /tandem-setup`.
-  - Engine unreachable: start the engine with `tandem-engine serve ...`
-    or `tandem panel init`.
+  - Engine unreachable: start the engine with `tandem serve ...` or
+    `tandem-engine serve ...`; for panel setup run `tandem panel init`.
   - 401 / 403: `Rotate or re-export the token; see shared/tandem-auth.md`.
-  - Missing provider/default model: `Open Tandem Settings → Providers / Models, connect a provider, choose a default model, then re-run /tandem-doctor.`
+  - Missing provider/default model: configure a provider through the TUI
+    setup flow, environment/config, or Tandem Settings → Providers /
+    Models, choose a default model, then re-run `/tandem-doctor`.
 - This command is **read-only**. It does not write files, mutate env, or
   start processes.
 - If `npm run healthcheck` is available in the workspace, you may invoke
