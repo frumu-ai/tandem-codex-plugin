@@ -1,3 +1,7 @@
 {
-  "mcpServers": {}
+  "mcp_servers": {
+    "tandemDocs": {
+      "url": "https://tandem.ac/mcp"
+    }
+  }
 }

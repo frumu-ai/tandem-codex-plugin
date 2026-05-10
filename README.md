@@ -14,7 +14,7 @@ validation, preview, and run.
 
 ## 1. What this is
 
-A focused Codex plugin (skill + slash commands + shared design rules + worked
+A focused Codex plugin (skill + Tandem Docs MCP + shared design rules + worked
 examples) that:
 
 - Walks you through designing a Tandem workflow from intent
@@ -58,7 +58,7 @@ a running Tandem engine and an engine token.
 ```bash
 git clone https://github.com/frumu-ai/tandem-codex-plugin.git
 cd tandem-codex-plugin
-codex marketplace add "$(pwd)"
+codex plugin marketplace add "$(pwd)"
 ```
 
 In the Codex TUI:
@@ -67,13 +67,13 @@ In the Codex TUI:
 /plugins
 ```
 
-Find **Tandem Workflow Architect** and install it. The new slash commands
-appear in `/help` once installed.
+Find **Tandem Workflow Architect** and install it. The plugin skill and
+bundled Tandem Docs MCP server appear once installed.
 
 ### From GitHub (when the repo is public)
 
 ```bash
-codex marketplace add https://github.com/frumu-ai/tandem-codex-plugin.git
+codex plugin marketplace add https://github.com/frumu-ai/tandem-codex-plugin.git
 ```
 
 Codex caches the plugin under `~/.codex/plugins/cache/<marketplace>/<plugin>/<version>/`.
@@ -241,7 +241,7 @@ Worked example: [`examples/manual-complex-workflow.md`](./examples/manual-comple
 
 ## 10. How MCP fits in
 
-Tandem already knows how to manage MCP servers. The plugin's job is to:
+Tandem already knows how to manage workflow MCP servers. The plugin's job is to:
 
 - Help you decide **which** MCP tools each agent needs.
 - Generate explicit `mcp_policy.allowed_servers` and
@@ -249,9 +249,11 @@ Tandem already knows how to manage MCP servers. The plugin's job is to:
 - Call out when an MCP isn't connected yet (`mcp_list`, `mcp_list_catalog`)
   and refuse to fabricate a tool name.
 
-The plugin's `.mcp.json` is intentionally empty. Configure MCP servers in
-your Tandem engine (control panel or `POST /mcp`), not in this plugin. Each
-example workflow documents which MCP servers it expects.
+The plugin bundles the Tandem Docs MCP server at `https://tandem.ac/mcp` so
+Codex can look up current Tandem API and workflow documentation while helping
+you plan. Configure workflow execution MCP servers in your Tandem engine
+(control panel or `POST /mcp`), not in this plugin. Each example workflow
+documents which runtime MCP servers it expects.
 
 ## 11. What this plugin does NOT do
 
@@ -267,17 +269,21 @@ example workflow documents which MCP servers it expects.
 
 ## 12. Layout note
 
-Two paths in this repo are required by the **Codex plugin specification**
+This repository is both the Codex plugin root and the marketplace root. The
+install command points Codex at the repo root, and
+`.agents/plugins/marketplace.json` describes the Git-backed plugin source for
+distribution.
+
+Two paths are required by the **Codex plugin specification**
 (see [developers.openai.com/codex/plugins/build](https://developers.openai.com/codex/plugins/build)):
 
 | Path | Why |
 |---|---|
-| `.codex-plugin/plugin.json` | Codex's required manifest location. |
+| `.codex-plugin/plugin.json` | Codex's required plugin manifest location. |
 | `.agents/plugins/marketplace.json` | Repo-scoped Codex marketplace entry. |
 
-Everything else (`skills/`, `commands/`, `shared/`, `examples/`, `scripts/`,
-`.mcp.json`, `assets/`) is at the repo root, which is the conventional
-plugin layout.
+The plugin payload lives at the repo root: `skills/`, `commands/`, `shared/`,
+`scripts/`, `.mcp.json`, and `assets/`.
 
 ---
 
@@ -286,7 +292,7 @@ plugin layout.
 ```
 .codex-plugin/plugin.json        Codex manifest
 .agents/plugins/marketplace.json Repo-scoped marketplace entry
-.mcp.json                        Plugin-bundled MCP config (empty by default)
+.mcp.json                        Plugin-bundled Tandem Docs MCP config
 skills/tandem-workflow-plan-mode/SKILL.md
 commands/{create,revise,build-complex,preview,validate,apply,import-preview,run}-workflow.md
 commands/{tandem-setup,tandem-doctor}.md

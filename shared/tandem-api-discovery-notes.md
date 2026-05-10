@@ -221,13 +221,11 @@ instead, the design defers to engine validation or asks the user.
 
 ### 5. `mcpServers` field shape inside `plugin.json`
 
-- **Suspected:** can be either a path (`"./.mcp.json"`) or an inline
-  object. The Codex docs page on `/codex/plugins/build` returns 403 to
-  WebFetch in this environment.
-- **Plan:** ship without the `mcpServers` field; the empty `.mcp.json`
-  at the plugin root is auto-detected per the public docs index.
-- **Verify:** developers.openai.com/codex/plugins/build (when
-  accessible) and `openai/plugins` reference plugins on GitHub.
+- **Verified:** Codex plugin docs use top-level
+  `"mcpServers": "./.mcp.json"`.
+- **Verified:** `.mcp.json` may contain a wrapped `mcp_servers` object.
+- **Current plugin:** bundles Tandem Docs MCP as `tandemDocs` at
+  `https://tandem.ac/mcp`.
 
 ### 6. Mission-builder detailed schema
 

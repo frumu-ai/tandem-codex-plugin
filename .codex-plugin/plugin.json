@@ -11,20 +11,30 @@
     "plan-mode"
   ],
   "homepage": "https://github.com/frumu-ai/tandem-codex-plugin",
+  "repository": "https://github.com/frumu-ai/tandem-codex-plugin",
   "license": "MIT",
-  "author": "frumu-ai",
+  "author": {
+    "name": "frumu-ai",
+    "url": "https://github.com/frumu-ai"
+  },
   "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
   "commands": "./commands/",
   "interface": {
     "displayName": "Tandem Workflow Architect",
     "shortDescription": "Plan Tandem workflows in Codex; govern and run them in Tandem.",
+    "longDescription": "A Codex plugin for designing Tandem workflows with plan-mode guidance, bundled Tandem docs, validation, previews, and governed execution through the Tandem engine.",
+    "developerName": "frumu-ai",
     "category": "Productivity",
     "capabilities": ["Interactive", "Read", "Write"],
+    "websiteURL": "https://github.com/frumu-ai/tandem-codex-plugin",
+    "brandColor": "#2563EB",
     "defaultPrompt": [
       "/create-workflow",
       "/build-complex-workflow",
       "/preview-workflow"
     ],
-    "icon": "./assets/icon.png"
+    "composerIcon": "./assets/icon.png",
+    "logo": "./assets/icon.png"
   }
 }
