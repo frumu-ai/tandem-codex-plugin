@@ -158,8 +158,12 @@ This is what the plugin's skill walks you through every time:
    sees the picture.
 5. **Ask only blocking questions.** Don't ask for things Tandem can answer
    later (defaults, MCP discovery, model fallback).
-6. **Validate via the API.** Use `client.workflowPlans.preview` or
-   `client.automationsV2.create` (status `paused`) to surface errors.
+6. **Validate via the API.** Use prompt-based
+   `client.workflowPlans.preview({ prompt, planSource, workspaceRoot? })`
+   for one-shot drafts, `client.workflowPlans.chatMessage` round-trips
+   for in-progress chat drafts, `client.workflowPlans.importPreview({ bundle })`
+   for bundles, or `client.automationsV2.create({ ...payload, status: "paused" })`
+   for V2 DAGs. `preview` is **not** a preview-by-`plan_id` call.
 7. **Apply only with explicit approval.** Never auto-apply. Never auto-run.
 
 Full design rules: [`shared/tandem-workflow-design-rules.md`](./shared/tandem-workflow-design-rules.md).
@@ -178,22 +182,34 @@ returns a `plan_id`, and shows the draft DAG. Iterate with:
 /revise-workflow <plan_id> "<change>"
 ```
 
-When ready, apply (this calls `workflowPlans.apply` and follows up with
-`importPreview` so you see the engine's compatibility report):
+When ready, apply. This calls `workflowPlans.apply`, **writes the
+returned `plan_package_bundle` to disk** (default
+`.tandem-codex/plan-bundles/<plan_id>.json`), and follows up with
+`importPreview` so you see the engine's compatibility report:
 
 ```
 /apply-workflow <plan_id>
 ```
 
 If `importPreview` reports compatible, finalize the import behind a
-final explicit approval:
+separate explicit approval. The plugin/skill will never run this step
+without a clear "yes, import":
 
 ```
-/import-preview-workflow ./path/to/bundle.json
+/import-preview-workflow .tandem-codex/plan-bundles/<plan_id>.json
 ```
 
-For one-shot prompt validation (no chat session) or to preview a bundle
-without applying:
+End-to-end CLI equivalent:
+
+```bash
+npm run create-draft -- "Daily Reddit research to Notion"
+npm run revise      -- <plan_id> "Add approval before Notion write"
+npm run apply       -- <plan_id>
+npm run import-plan -- .tandem-codex/plan-bundles/<plan_id>.json
+```
+
+For one-shot prompt validation (no chat session) or to preview an
+existing bundle without applying:
 
 ```
 /preview-workflow "<one-line workflow goal>"
@@ -201,7 +217,10 @@ without applying:
 ```
 
 The full documented flow is
-`chatStart → chatMessage → apply → importPreview → importPlan`.
+`chatStart → chatMessage → apply → importPreview → importPlan`. The
+plugin pauses at every step that touches your live Tandem so you can
+inspect before committing. Bundles live under `.tandem-codex/`, which
+is git-ignored.
 
 Worked example: [`examples/reddit-research-to-notion.md`](./examples/reddit-research-to-notion.md).
 

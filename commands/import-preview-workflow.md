@@ -8,10 +8,14 @@ You are operating under the **tandem-workflow-plan-mode** skill.
 ## Usage
 
 ```
+/import-preview-workflow .tandem-codex/plan-bundles/<plan_id>.json
 /import-preview-workflow ./path/to/bundle.json
 ```
 
-If the path is missing, ask the user once. Don't guess.
+If the path is missing, ask the user once. Don't guess. When the user
+just ran `/apply-workflow <plan_id>`, the bundle is at
+`.tandem-codex/plan-bundles/<plan_id>.json` by default — use that path
+unless the user specified `--out` to apply.
 
 ## What this command does
 
