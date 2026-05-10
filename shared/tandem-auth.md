@@ -55,9 +55,10 @@ In Codex, the fastest end-to-end check is `/tandem-doctor`.
 
 ## 2. Provide the token
 
-The plugin and the bundled `@frumu/tandem-client` SDK look for the token
-in this order. Whichever one resolves first wins; pick the one that
-matches your setup.
+The `@frumu/tandem-client` `TandemClient` constructor takes a string
+`token`. It does **not** itself read env vars or files. The plugin's
+helper scripts (`scripts/`) resolve the token from the environment in
+this order, then pass the resulting string to the SDK constructor:
 
 ### Order 1 — `TANDEM_API_TOKEN` env var (simplest)
 
@@ -74,12 +75,13 @@ whatever onboarding command your installer ran.
 export TANDEM_API_TOKEN_FILE="/path/your/installer/chose"
 ```
 
-The SDK reads the file lazily, so the token never has to live in process
-env. Path is **whatever the installer chose** — the plugin does not assume
-a fixed location. Check the output of `tandem panel init` (panel install)
-or your engine-bring-up script (headless install) for the canonical path.
+The helper scripts read the file lazily, trim it, and pass the contents
+to `new TandemClient({ token })`. The path is **whatever the installer
+chose** — the plugin does not assume a fixed location. Check the output
+of `tandem panel init` (panel install) or your engine-bring-up script
+(headless install) for the canonical path.
 
-### Order 3 — SDK `token` constructor option
+### Order 3 — SDK `token` constructor option (what the scripts call)
 
 ```ts
 import { TandemClient } from "@frumu/tandem-client";
@@ -87,9 +89,9 @@ import { TandemClient } from "@frumu/tandem-client";
 const client = new TandemClient({ baseUrl, token });
 ```
 
-The helper scripts in `scripts/` use this option after loading `.env`,
-which means anything you put in `TANDEM_API_TOKEN` (or that resolves via
-`TANDEM_API_TOKEN_FILE`) flows through transparently.
+This is the *output* of the resolution order above — the scripts pass
+the resolved string here. If you're calling the SDK from your own code
+outside the plugin, this is where the token enters the SDK.
 
 ### Discovery
 

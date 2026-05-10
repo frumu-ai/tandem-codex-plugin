@@ -1,44 +1,32 @@
 #!/usr/bin/env tsx
 /**
- * Preview a Tandem workflow plan, given a plan_id or a path to an
- * imported bundle JSON file.
+ * One-shot Tandem workflow preview.
+ *
+ * The `@frumu/tandem-client` SDK exposes `workflowPlans.preview` as a
+ * prompt-based one-shot, NOT a "preview-by-plan-id" overload. The
+ * canonical README example is:
+ *
+ *   client.workflowPlans.preview({
+ *     prompt: "Create a release checklist automation",
+ *     planSource: "planner_page",
+ *   })
+ *
+ * For drafts that came from `chatStart` (a `plan_id`), the documented
+ * flow is `apply → importPreview` on the returned bundle. Use
+ * `npm run apply -- <plan_id>` (or `/apply-workflow <plan_id>`) for that.
  *
  * Usage:
- *   npm run preview -- <plan_id>
- *   npm run preview -- ./bundle.json
+ *   npm run preview -- "<one-line workflow goal>"     # one-shot prompt preview
+ *   npm run preview -- ./path/to/bundle.json          # imported-bundle preview
  *
- * For a plan_id: calls client.workflowPlans.preview.
- * For a JSON file path: calls client.workflowPlans.importPreview with
- * the file's parsed contents.
- *
- * Raw-fetch alternative for plan_id:
- *
- *   const res = await fetch(`${baseUrl}/workflow-plans/preview`, {
- *     method: "POST",
- *     headers: {
- *       "content-type": "application/json",
- *       Authorization: `Bearer ${token}`,
- *     },
- *     body: JSON.stringify({ plan_id }),
- *   });
- *   const data = await res.json();
- *   console.log(JSON.stringify(data, null, 2));
+ * Honours TANDEM_WORKSPACE_ROOT for the prompt path. Bundle path calls
+ * `workflowPlans.importPreview({ bundle })`.
  */
 
 import "dotenv/config";
-import { readFileSync, existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { TandemClient } from "@frumu/tandem-client";
-
-function envOrDie(name: string, fallback?: string): string {
-  const v = process.env[name] ?? fallback;
-  if (v === undefined || v === "") {
-    console.error(`[tandem-codex-plugin] Missing env: ${name}`);
-    console.error(`See shared/tandem-auth.md for token sources.`);
-    process.exit(2);
-  }
-  return v;
-}
+import { createClient, resolveWorkspaceRoot } from "./lib/tandem-config.ts";
 
 function looksLikePath(arg: string): boolean {
   return (
@@ -50,17 +38,16 @@ function looksLikePath(arg: string): boolean {
 }
 
 async function main() {
-  const arg = process.argv[2]?.trim();
+  const arg = process.argv.slice(2).join(" ").trim();
   if (!arg) {
-    console.error("Usage: npm run preview -- <plan_id | path-to-bundle.json>");
+    console.error("Usage:");
+    console.error('  npm run preview -- "<one-line workflow goal>"  # prompt preview');
+    console.error("  npm run preview -- ./path/to/bundle.json       # bundle preview");
     process.exit(64);
   }
 
-  const baseUrl = envOrDie("TANDEM_BASE_URL", "http://127.0.0.1:39731");
-  const tokenless = process.env.TANDEM_UNSAFE_NO_API_TOKEN === "1";
-  const token = tokenless ? "" : envOrDie("TANDEM_API_TOKEN");
-
-  const client = new TandemClient({ baseUrl, token });
+  const { client } = createClient();
+  const workspaceRoot = resolveWorkspaceRoot();
 
   try {
     if (looksLikePath(arg)) {
@@ -70,11 +57,15 @@ async function main() {
         process.exit(2);
       }
       const bundle = JSON.parse(readFileSync(path, "utf8"));
-      const preview = await client.workflowPlans.importPreview({ bundle });
-      console.log(JSON.stringify(preview, null, 2));
+      const out = await client.workflowPlans.importPreview({ bundle });
+      console.log(JSON.stringify({ phase: "importPreview", out }, null, 2));
     } else {
-      const preview = await client.workflowPlans.preview({ planId: arg });
-      console.log(JSON.stringify(preview, null, 2));
+      const out = await client.workflowPlans.preview({
+        prompt: arg,
+        planSource: "intent_planner_page",
+        ...(workspaceRoot ? { workspaceRoot } : {}),
+      });
+      console.log(JSON.stringify({ phase: "preview", out }, null, 2));
     }
     process.exit(0);
   } catch (err) {

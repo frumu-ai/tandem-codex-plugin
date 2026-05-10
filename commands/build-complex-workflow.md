@@ -73,5 +73,8 @@ Final response after a successful create:
 - **Automation id**
 - **Status** (paused/active)
 - **Approval gates** (list of nodes that require approval and why)
-- **Next:** `/run-workflow <automation_id>` or
-  `/preview-workflow <automation_id>`.
+- **Next:** `/run-workflow <automation_id>` once you've inspected the
+  paused automation in Tandem. (The plugin's `/preview-workflow`
+  applies to workflow-plan prompts and bundles, not V2 automation
+  ids; review the V2 automation in the control panel or via
+  `automationsV2.listRuns`.)
