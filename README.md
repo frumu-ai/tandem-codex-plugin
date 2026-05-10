@@ -78,39 +78,67 @@ codex marketplace add https://github.com/frumu-ai/tandem-codex-plugin.git
 
 Codex caches the plugin under `~/.codex/plugins/cache/<marketplace>/<plugin>/<version>/`.
 
-## 5. Configure Tandem API access
+## 5. Install Tandem
 
-The plugin talks to a running Tandem engine over HTTP. Two pieces of config:
+The plugin doesn't bundle the engine. Pick one of two supported paths:
 
-| Variable | What | Default |
-|---|---|---|
-| `TANDEM_BASE_URL` | Where the engine listens | `http://127.0.0.1:39731` |
-| `TANDEM_API_TOKEN` | Engine token (see §6) | — |
+### A. Engine / headless
 
-Copy `.env.example` to `.env` and fill in `TANDEM_API_TOKEN`. The helper
-scripts in `scripts/` read this `.env`. The skill itself instructs Codex to
-read these same env vars from your shell.
+```bash
+npm install -g @frumu/tandem
+tandem-engine serve --hostname 127.0.0.1 --port 39731
+```
 
-Detailed auth recipe: [`shared/tandem-auth.md`](./shared/tandem-auth.md).
+`@frumu/tandem` ships both the `tandem` master CLI and the `tandem-engine`
+binary. Use this path on servers, in CI, or when you don't want the web UI.
 
-## 6. Provide the engine token
+### B. Control panel (recommended for local dev)
 
-Three verified ways to give the plugin a token (any one works):
+```bash
+npm install -g @frumu/tandem       # provides the `tandem` master CLI
+tandem install panel               # installs @frumu/tandem-panel
+tandem panel init                  # provisions the panel + engine + token
+```
 
-1. **Env var.** `export TANDEM_API_TOKEN=<token>`. The plugin and scripts
-   pick this up.
-2. **Token file.** `export TANDEM_API_TOKEN_FILE=/path/to/token`. The Tandem
-   SDK reads the file. Useful with the OS keychain.
-3. **Generate locally.** `tandem-engine token generate` prints a token; pipe
-   it into `TANDEM_API_TOKEN` or a file. The control panel and SDKs share
-   this token via the keychain by default.
+The control panel ([`@frumu/tandem-panel`](https://www.npmjs.com/package/@frumu/tandem-panel))
+gives you a web UI for chats, routines, swarms, memory, channels, and ops
+against the same engine the plugin talks to.
 
-> The engine accepts the token as `X-Agent-Token`, `X-Tandem-Token`, or
-> `Authorization: Bearer …`. The bundled SDK handles the header for you.
+> **Legacy compatibility.** Older docs reference a standalone `tandem-setup`
+> CLI shipped by `@frumu/tandem-panel`. Use the `tandem install panel` flow
+> above unless documentation you trust says otherwise for your version.
+
+After either path the engine listens on `TANDEM_BASE_URL` (default
+`http://127.0.0.1:39731`). Discover where the installer wrote the token by
+running `/tandem-setup` in Codex, and verify everything end-to-end with
+`/tandem-doctor`.
+
+## 6. Configure plugin auth
+
+The plugin and the bundled `@frumu/tandem-client` SDK look for the engine
+token in this order:
+
+1. `TANDEM_API_TOKEN` environment variable.
+2. `TANDEM_API_TOKEN_FILE` environment variable pointing at a file that
+   contains the token. Path is whatever your installer chose — the plugin
+   does not assume a location.
+3. The SDK's `token` constructor option (used by the helper scripts in
+   `scripts/` after they load `.env`).
 
 A dev-only escape hatch (`TANDEM_UNSAFE_NO_API_TOKEN=1`) is supported but
 **not recommended**. The engine logs a warning on every request when this
 is set. Do not use it on hosted, public, or shared engines.
+
+The engine accepts the token via any one of these request headers (the SDK
+picks one for you; use whichever you prefer when hand-rolling fetch):
+
+- `X-Agent-Token: <token>`
+- `X-Tandem-Token: <token>`
+- `Authorization: Bearer <token>`
+
+Copy `.env.example` to `.env` and set the variable(s) that match your
+setup. Detailed recipe and troubleshooting:
+[`shared/tandem-auth.md`](./shared/tandem-auth.md).
 
 ## 7. The plan-mode loop
 
@@ -223,6 +251,7 @@ plugin layout.
 .mcp.json                        Plugin-bundled MCP config (empty by default)
 skills/tandem-workflow-plan-mode/SKILL.md
 commands/{create,revise,build-complex,preview,validate,run}-workflow.md
+commands/{tandem-setup,tandem-doctor}.md
 shared/tandem-workflow-design-rules.md
 shared/tandem-api-discovery-notes.md
 shared/tandem-output-contracts.md

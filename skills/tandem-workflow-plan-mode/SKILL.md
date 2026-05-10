@@ -58,6 +58,43 @@ the conflict before continuing.
 
 ---
 
+## Pre-flight (before Step 1)
+
+Before any plan-mode work that requires the engine — drafting,
+validation, preview, apply, run — confirm the engine is reachable and
+authenticated:
+
+1. **Resolve base URL.** Read `TANDEM_BASE_URL`, defaulting to
+   `http://127.0.0.1:39731`.
+2. **Resolve the token** in this order, stopping at the first hit:
+   - `TANDEM_API_TOKEN` env var.
+   - `TANDEM_API_TOKEN_FILE` env var pointing at a readable, non-empty
+     file.
+   - SDK `token` constructor option (only available to scripts that
+     accept one).
+   - If none is set and `TANDEM_UNSAFE_NO_API_TOKEN=1` is set, warn
+     and continue. Otherwise treat the token as unset.
+3. **Probe.** Attempt a single read-only call — `client.health()` if
+   confirmed in the loaded docs, otherwise the first read-only API the
+   chosen route requires.
+
+If the probe fails with a connection error, `401`, or `403`:
+
+- **Stop the loop.**
+- Surface the error verbatim (do not paraphrase).
+- Route the user to:
+  - `/tandem-doctor` for a structured diagnostic.
+  - `/tandem-setup` for install and token-discovery guidance.
+- Do **not** proceed to drafting, validation, or apply until the user
+  reports a fix.
+
+Skip the pre-flight only for purely local tasks that need no engine call
+(for example, discussing JSON shape, explaining policy patterns, or
+sketching agents on paper). Resume it the moment a step needs the
+engine.
+
+---
+
 ## The plan-mode loop
 
 Run this loop on every Tandem-related request.
@@ -225,3 +262,7 @@ When the user invokes `/create-workflow`, `/revise-workflow`,
 `/build-complex-workflow`, `/preview-workflow`, `/validate-workflow`, or
 `/run-workflow`, follow the corresponding `commands/<name>.md` template
 on top of this loop.
+
+For engine-setup discovery and connectivity diagnostics, use
+`/tandem-setup` and `/tandem-doctor` — the pre-flight section above
+delegates to these when the engine is unreachable or auth fails.
