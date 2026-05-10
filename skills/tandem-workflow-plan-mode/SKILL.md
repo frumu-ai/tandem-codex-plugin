@@ -213,17 +213,33 @@ Show the engine's response verbatim. If validation fails, fix and re-run.
 
 Confirm: "Should I apply this plan / arm this automation?"
 
-On a clear yes:
+For **intent workflows**, the documented flow has six explicit steps.
+Each step that mutates live Tandem state requires its own approval:
 
-- **Plans:** `client.workflowPlans.apply({ planId, creatorId })`. Then
-  optionally `client.workflowPlans.importPreview({ bundle: applied.plan_package_bundle })`
-  so the user sees the engine's compatibility report. Final
-  `client.workflowPlans.importPlan({ bundle })` requires a separate
-  explicit approval — route the user to `/import-preview-workflow`.
-- **Automations:** flip `status: "paused" → "active"` via the Tandem
-  control panel (or an automations PATCH endpoint if the engine
-  exposes one — *not yet verified in `@frumu/tandem-client`'s public
-  surface*).
+1. `chatStart({ prompt, planSource, workspaceRoot? })` — start the draft.
+2. `chatMessage({ planId, message })` — revise until the user is
+   satisfied. No mutation yet.
+3. **Approval gate 1.** Only after a clear "yes, apply" call
+   `apply({ planId, creatorId })`.
+4. `importPreview({ bundle: applied.plan_package_bundle })` — show the
+   compatibility report. No mutation yet.
+5. Write the returned bundle to disk so the user does not have to copy
+   JSON out of terminal output. Default path:
+   `.tandem-codex/plan-bundles/<planId>.json` (git-ignored). The
+   helper script does this automatically; if you call the SDK
+   directly, do it yourself.
+6. **Approval gate 2.** Only after a clear "yes, import" call
+   `importPlan({ bundle })`. Route the user to
+   `/import-preview-workflow` for this step rather than calling it
+   from `/apply-workflow`.
+
+Never use `client.workflowPlans.preview({ planId })` — that signature
+does not exist. `preview` is prompt-based one-shot only.
+
+For **V2 automations**, flip `status: "paused" → "active"` via the
+Tandem control panel (or an automations PATCH endpoint if the engine
+exposes one — *not yet verified in `@frumu/tandem-client`'s public
+surface*).
 
 Then stop. Do **not** call `runNow` unless the user asked for that
 specifically.
