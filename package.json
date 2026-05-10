@@ -1,0 +1,23 @@
+{
+  "name": "tandem-codex-plugin",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Helper scripts that the Tandem Codex plugin uses to talk to the Tandem engine HTTP API.",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "healthcheck": "tsx scripts/tandem-api-healthcheck.ts",
+    "create-draft": "tsx scripts/tandem-create-workflow-draft.ts",
+    "preview": "tsx scripts/tandem-preview-workflow.ts"
+  },
+  "dependencies": {
+    "@frumu/tandem-client": "^0.1.0",
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.3"
+  }
+}
