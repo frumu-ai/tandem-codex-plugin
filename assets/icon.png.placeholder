@@ -1,0 +1,6 @@
+PLACEHOLDER
+
+Replace this file with a real PNG named `icon.png` (recommended 512x512,
+transparent background). The plugin manifest in `.codex-plugin/plugin.json`
+references `./assets/icon.png`. Until a real icon is supplied, Codex will
+fall back to the default plugin icon.
