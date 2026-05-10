@@ -99,22 +99,21 @@ The plugin doesn't bundle the engine. Pick one of two supported paths:
 ### A. CLI binaries / headless
 
 ```bash
-npm install -g @frumu/tandem @frumu/tandem-tui
+npm install -g @frumu/tandem
 tandem doctor
 tandem-engine status
 tandem-engine serve --hostname 127.0.0.1 --port 39731
 ```
 
-`@frumu/tandem` ships the `tandem` master CLI and direct
-`tandem-engine` runtime. `@frumu/tandem-tui` ships `tandem-tui`. Use
-this path on servers, in CI, or when you want terminal-first setup.
-Use `tandem-engine` for engine-specific commands such as `serve`,
-`status`, `providers`, and `token generate`.
+`@frumu/tandem` ships the `tandem` master CLI and the `tandem-engine`
+runtime. Use this path on servers, in CI, or when you want
+terminal-first setup. Use `tandem-engine` for engine-specific commands
+such as `serve`, `status`, `providers`, and `token generate`.
 
 ### B. Control panel (recommended for local dev)
 
 ```bash
-npm install -g @frumu/tandem @frumu/tandem-tui
+npm install -g @frumu/tandem
 tandem install panel               # installs @frumu/tandem-panel
 tandem panel init                  # provisions the panel + engine + token
 tandem panel open                  # optional: open the web admin

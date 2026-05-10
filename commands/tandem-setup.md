@@ -30,23 +30,23 @@ State both options. Do not pick one for the user unless they ask.
 **A. CLI binaries / headless**
 
 ```bash
-npm install -g @frumu/tandem @frumu/tandem-tui
+npm install -g @frumu/tandem
 tandem doctor
 tandem-engine status
 tandem-engine serve --hostname 127.0.0.1 --port 39731
 ```
 
-`@frumu/tandem` provides the `tandem` master CLI and direct
-`tandem-engine` runtime. `@frumu/tandem-tui` provides `tandem-tui`.
-Use `tandem-engine` for engine-specific commands like `serve`, `status`,
-`providers`, and `token generate`. Use the `tandem` master CLI for
-top-level diagnostics such as `tandem doctor` and add-ons such as
-`tandem panel ...`. Best for servers, CI, or terminal-first local use.
+`@frumu/tandem` provides the `tandem` master CLI and the `tandem-engine`
+runtime. Use `tandem-engine` for engine-specific commands like `serve`,
+`status`, `providers`, and `token generate`. Use the `tandem` master
+CLI for top-level diagnostics such as `tandem doctor` and add-ons such
+as `tandem panel ...`. Best for servers, CI, or terminal-first local
+use.
 
 **B. Control panel**
 
 ```bash
-npm install -g @frumu/tandem @frumu/tandem-tui
+npm install -g @frumu/tandem
 tandem install panel               # installs @frumu/tandem-panel
 tandem panel init                  # provisions panel + engine + token
 tandem panel open                  # optional: open the web admin
