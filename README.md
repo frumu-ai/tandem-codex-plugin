@@ -56,12 +56,10 @@ provider/default model for workflows that execute model work.
 
 ## 4. Install in Codex
 
-### From a local checkout (development)
+### From GitHub
 
 ```bash
-git clone https://github.com/frumu-ai/tandem-codex-plugin.git
-cd tandem-codex-plugin
-codex plugin marketplace add "$(pwd)"
+codex plugin marketplace add frumu-ai/tandem-codex-plugin
 ```
 
 In the Codex TUI:
@@ -73,13 +71,26 @@ In the Codex TUI:
 Find **Tandem Workflow Architect** and install it. The plugin skill and
 bundled Tandem Docs MCP server appear once installed.
 
-### From GitHub (when the repo is public)
+You can pin a branch, tag, or commit with:
 
 ```bash
-codex plugin marketplace add https://github.com/frumu-ai/tandem-codex-plugin.git
+codex plugin marketplace add frumu-ai/tandem-codex-plugin@main
 ```
 
-Codex caches the plugin under `~/.codex/plugins/cache/<marketplace>/<plugin>/<version>/`.
+### From a local checkout (development)
+
+Use a local marketplace root only when developing or testing unpublished
+changes:
+
+```bash
+git clone https://github.com/frumu-ai/tandem-codex-plugin.git
+cd tandem-codex-plugin
+codex plugin marketplace add "$(pwd)"
+```
+
+Codex accepts `owner/repo[@ref]`, HTTPS Git URLs, SSH URLs, and local
+marketplace root directories. It caches installed plugins under
+`~/.codex/plugins/cache/<marketplace>/<plugin>/<version>/`.
 
 ## 5. Install Tandem
 
