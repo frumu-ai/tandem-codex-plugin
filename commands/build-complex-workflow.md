@@ -21,7 +21,11 @@ plan-mode loop for the **Manual / complex DAG** route.
 
 - `agent_id` (kebab-case)
 - `display_name`
-- `model_policy.default_model`: `provider_id`, `model_id`
+- `model_policy.default_model`: `provider_id`, `model_id`, only when
+  Tandem already has a configured default or the user selected a
+  confirmed provider/model from `client.providers.config()` /
+  `client.providers.catalog()`. Codex authentication is not provider
+  authentication.
 - `tool_policy.allowlist[]` and (if needed) `denylist[]`
 - `mcp_policy.allowed_servers[]` and `mcp_policy.allowed_tools[]`
 - `approval_policy` — only `"auto"` for read-only agents with no external

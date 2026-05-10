@@ -31,6 +31,27 @@ new TandemClient({
 - `_request` sends the token as `Authorization: Bearer <token>`.
 - `client.health()` exists and calls `GET /global/health`.
 
+### `client.providers` — source-verified
+
+The SDK exposes provider/model configuration separately from Codex auth
+and separately from the Tandem engine token:
+
+```ts
+client.providers.catalog();                  // list providers/models
+client.providers.config();                   // current provider config
+client.providers.setDefaults(providerId, modelId);
+client.providers.setApiKey(providerId, apiKey);
+client.providers.oauthAuthorize(providerId);
+client.providers.oauthStatus(providerId, sessionId?);
+client.providers.oauthUseLocalSession(providerId);
+client.providers.oauthDisconnect(providerId);
+client.providers.authStatus();
+```
+
+Codex authentication does not configure these providers. Workflows that
+execute model work need Tandem provider readiness from this API or from
+the Tandem control panel.
+
 ### `client.workflowPlans` — source-verified shapes
 
 All of these use camelCase argument keys (the SDK maps to API
@@ -90,7 +111,7 @@ Per-agent V2 fields verified:
   "agent_id": "research",
   "display_name": "Research",
   "model_policy": {
-    "default_model": { "provider_id": "openrouter", "model_id": "openai/gpt-4o-mini" }
+    "default_model": { "provider_id": "<confirmed-provider-id>", "model_id": "<confirmed-model-id>" }
   },
   "tool_policy": {
     "allowlist": ["read", "websearch"],

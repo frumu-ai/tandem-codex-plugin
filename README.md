@@ -38,7 +38,8 @@ examples) that:
   governance inside Tandem.
 
 This plugin does **not** target users who have never used Tandem. It assumes
-a running Tandem engine and an engine token.
+a running Tandem engine, an engine token, and a Tandem-configured model
+provider/default model for workflows that execute model work.
 
 ## 3. How it helps Tandem users
 
@@ -143,7 +144,29 @@ Copy `.env.example` to `.env` and set the variable(s) that match your
 setup. Detailed recipe and troubleshooting:
 [`shared/tandem-auth.md`](./shared/tandem-auth.md).
 
-## 7. The plan-mode loop
+## 7. Configure model providers
+
+Codex authentication is separate from Tandem provider authentication.
+Logging into Codex does not automatically give the Tandem engine access
+to OpenAI, Anthropic, OpenRouter, or any other model provider.
+
+For local dev, use the Tandem control panel's Settings → Providers /
+Models area to connect a provider and choose a default model. The SDK
+surface is also available for trusted local setup scripts:
+
+```ts
+await client.providers.catalog();
+await client.providers.config();
+await client.providers.setApiKey(providerId, apiKey);
+await client.providers.setDefaults(providerId, modelId);
+```
+
+Do not paste provider API keys into Codex chat. Enter them in Tandem's
+control panel or pass them directly from a private local shell/session.
+Run `/tandem-doctor` after setup; it checks engine auth and
+provider/model readiness.
+
+## 8. The plan-mode loop
 
 This is what the plugin's skill walks you through every time:
 
@@ -157,7 +180,8 @@ This is what the plugin's skill walks you through every time:
 4. **Explain the graph in plain language.** No JSON dump until the user
    sees the picture.
 5. **Ask only blocking questions.** Don't ask for things Tandem can answer
-   later (defaults, MCP discovery, model fallback).
+   later, but do stop if Tandem has no configured provider/default model
+   and the next step would execute model work.
 6. **Validate via the API.** Use prompt-based
    `client.workflowPlans.preview({ prompt, planSource, workspaceRoot? })`
    for one-shot drafts, `client.workflowPlans.chatMessage` round-trips
@@ -168,7 +192,7 @@ This is what the plugin's skill walks you through every time:
 
 Full design rules: [`shared/tandem-workflow-design-rules.md`](./shared/tandem-workflow-design-rules.md).
 
-## 8. Build from intent
+## 9. Build from intent
 
 ```
 /create-workflow
@@ -224,7 +248,7 @@ is git-ignored.
 
 Worked example: [`examples/reddit-research-to-notion.md`](./examples/reddit-research-to-notion.md).
 
-## 9. Build a complex manual workflow
+## 10. Build a complex manual workflow
 
 ```
 /build-complex-workflow
@@ -239,7 +263,7 @@ before arming.
 
 Worked example: [`examples/manual-complex-workflow.md`](./examples/manual-complex-workflow.md).
 
-## 10. How MCP fits in
+## 11. How MCP fits in
 
 Tandem already knows how to manage workflow MCP servers. The plugin's job is to:
 
@@ -255,7 +279,7 @@ you plan. Configure workflow execution MCP servers in your Tandem engine
 (control panel or `POST /mcp`), not in this plugin. Each example workflow
 documents which runtime MCP servers it expects.
 
-## 11. What this plugin does NOT do
+## 12. What this plugin does NOT do
 
 - It does **not** replace Tandem's planner, validator, or runtime.
 - It does **not** store, cache, or transmit your engine token. Tokens stay
@@ -267,7 +291,7 @@ documents which runtime MCP servers it expects.
 - It does **not** invent Tandem field names. When a field is uncertain, the
   skill asks the engine or asks you, never both.
 
-## 12. Layout note
+## 13. Layout note
 
 This repository is both the Codex plugin root and the marketplace root. The
 install command points Codex at the repo root, and

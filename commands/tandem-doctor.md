@@ -1,6 +1,6 @@
 ---
 title: /tandem-doctor
-description: Verify the plugin can reach a running Tandem engine. Checks base URL, token resolution, engine health, and an authenticated request when an endpoint is confirmed.
+description: Verify the plugin can reach a running Tandem engine. Checks base URL, token resolution, engine health, authenticated read access, and provider/model readiness when endpoints are confirmed.
 ---
 
 You are operating under the **tandem-workflow-plan-mode** skill.
@@ -11,7 +11,7 @@ Run a one-shot diagnostic against the user's Tandem setup before any
 workflow design, validation, preview, or apply. The skill's pre-flight
 calls this when the engine appears unreachable or auth fails.
 
-## Checks (in order; stop and report at the first failure)
+## Checks (in order; stop and report at the first connection/auth failure)
 
 ### 1. `TANDEM_BASE_URL`
 
@@ -64,19 +64,40 @@ confirmed (e.g. a `workflowPlans.list` or `automationsV2.list` call):
 - If no such endpoint is confirmed in the loaded docs, report `skipped`
   and say so.
 
+### 5. Provider/model readiness
+
+Only if step 3 succeeded and the SDK exposes `client.providers`:
+
+- Call `client.providers.config()`.
+- Report configured default provider/model if present.
+- If no default is configured, call `client.providers.catalog()` when
+  available and summarize available provider/model choices without
+  inventing a recommendation.
+- If provider config endpoints fail, report `failed` with the engine's
+  error verbatim.
+- If provider config endpoints are unavailable in this Tandem version,
+  report `skipped (providers API unavailable)`.
+
+This check answers whether Tandem can run model work. Codex
+authentication does not satisfy this requirement.
+
 ## Behaviour rules
 
 - **Never** log or echo the token value. Only report source labels.
+- **Never** ask for or echo model-provider API keys. Provider keys belong
+  in Tandem's control panel or a private local SDK/CLI setup session.
 - **Surface engine errors verbatim.** Do not paraphrase 401s, 403s, or
   network errors. They are the user's most actionable signal.
 - For each failed check, print one concrete next action:
   - Missing token: `Run /tandem-setup`.
-  - Engine unreachable: `Start the engine via `tandem-engine serve …` or `tandem panel init`.`
+  - Engine unreachable: start the engine with `tandem-engine serve ...`
+    or `tandem panel init`.
   - 401 / 403: `Rotate or re-export the token; see shared/tandem-auth.md`.
+  - Missing provider/default model: `Open Tandem Settings → Providers / Models, connect a provider, choose a default model, then re-run /tandem-doctor.`
 - This command is **read-only**. It does not write files, mutate env, or
   start processes.
 - If `npm run healthcheck` is available in the workspace, you may invoke
-  it as the implementation of steps 3–4 and parse its exit code + JSON
+  it as the implementation of steps 3–5 and parse its exit code + JSON
   output instead of calling the SDK directly.
 
 ## Output
@@ -89,6 +110,7 @@ Tandem doctor:
 - Token: <env | file:<path> | unsafe-no-token | unset>
 - Health endpoint: <ok | failed | skipped (reason)>
 - Authenticated request: <ok | failed | skipped (reason)>
+- Provider/model readiness: <ok provider=<id> model=<id> | missing default | failed | skipped (reason)>
 
 Engine errors (verbatim):
 <...if any...>

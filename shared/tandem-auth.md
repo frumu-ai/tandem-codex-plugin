@@ -120,6 +120,38 @@ fetch(`${baseUrl}/global/health`, {
 
 ---
 
+## 4. Engine auth is not provider auth
+
+There are three separate credentials in play:
+
+- **Codex authentication** lets the user run Codex.
+- **Tandem engine authentication** lets Codex talk to the Tandem engine.
+- **Tandem provider authentication** lets the Tandem engine call OpenAI,
+  Anthropic, OpenRouter, or another model provider.
+
+Codex login does not automatically configure model providers inside
+Tandem. Before validating, applying, or running workflows that execute
+model work, check provider readiness:
+
+```ts
+await client.providers.config();
+await client.providers.catalog();
+```
+
+Configure provider keys and defaults in the Tandem control panel when
+available. For trusted local setup scripts, the SDK exposes:
+
+```ts
+await client.providers.setApiKey(providerId, apiKey);
+await client.providers.setDefaults(providerId, modelId);
+```
+
+Never paste model-provider API keys into Codex chat. Enter them in the
+Tandem control panel or pass them directly from a private local shell or
+script.
+
+---
+
 ## 4. Healthcheck script
 
 ```bash

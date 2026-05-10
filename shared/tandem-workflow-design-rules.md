@@ -101,23 +101,30 @@ checks them.
 
 - Default to a small, fast model for read/triage stages.
 - Use a stronger model for verifier and orchestrator roles.
-- Example:
+- Do not assume Codex authentication gives Tandem model access. Confirm
+  Tandem provider readiness with `client.providers.config()` or ask the
+  user which Tandem-configured provider/model to use.
+- Prefer Tandem's configured engine default when it exists. Omit
+  `model_policy` in local-only drafts if the provider/model is not yet
+  known; let validation or `/tandem-doctor` surface the missing setup.
+- Example using confirmed provider/model ids only:
   ```json
   {
     "model_policy": {
       "default_model": {
-        "provider_id": "openrouter",
-        "model_id": "openai/gpt-4o-mini"
+        "provider_id": "<confirmed-provider-id>",
+        "model_id": "<confirmed-model-id>"
       }
     }
   }
   ```
-- Specify per-role models when you have an orchestrated DAG:
+- Specify per-role models when you have an orchestrated DAG and those
+  provider/model ids are confirmed:
   ```json
   {
     "role_models": {
-      "orchestrator": { "provider_id": "openrouter", "model_id": "anthropic/claude-3.5-sonnet" },
-      "verifier":     { "provider_id": "openrouter", "model_id": "anthropic/claude-3.5-sonnet" }
+      "orchestrator": { "provider_id": "<confirmed-provider-id>", "model_id": "<confirmed-strong-model-id>" },
+      "verifier":     { "provider_id": "<confirmed-provider-id>", "model_id": "<confirmed-strong-model-id>" }
     }
   }
   ```

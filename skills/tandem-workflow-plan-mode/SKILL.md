@@ -34,12 +34,19 @@ that Tandem's engine will execute.
    `TANDEM_API_TOKEN` (or `TANDEM_API_TOKEN_FILE`) and pass it to the SDK.
    If the token is missing, stop and tell the user how to provide one
    (point them at `shared/tandem-auth.md`).
-4. **Never fabricate Tandem field names** that you are not 100% sure of.
+4. **Never assume Codex authentication configures Tandem providers.**
+   Codex login lets the user run Codex; it does not give the Tandem
+   engine an OpenAI, Anthropic, OpenRouter, or other model-provider
+   credential. Discover provider/model readiness through
+   `client.providers.config()` / `client.providers.catalog()` or ask the
+   user to configure providers in Tandem. Never ask the user to paste
+   provider API keys into chat.
+5. **Never fabricate Tandem field names** that you are not 100% sure of.
    If a field is ambiguous (e.g. an execution-profile name, an enum
    value), do one of: (a) skip it and let the engine validate, (b) ask
    the user, or (c) ask the Tandem engine via a preview call. Never
    invent.
-5. **Approval-gate every external write** by default:
+6. **Approval-gate every external write** by default:
    - destructive operations (deleting, dropping, archiving)
    - external side-effects (Slack, Notion, email, GitHub PR/issue write)
    - public publication
@@ -49,7 +56,7 @@ that Tandem's engine will execute.
    - first-time use of a new MCP tool
    - any tool not on the agent's current allowlist
    - schedule changes that broaden scope
-6. **Source of truth is the Tandem engine.** Prefer the verified
+7. **Source of truth is the Tandem engine.** Prefer the verified
    entry points over local guessing:
    - `client.workflowPlans.preview({ prompt, planSource, workspaceRoot? })`
      for one-shot prompt validation.
@@ -85,6 +92,24 @@ authenticated:
 3. **Probe.** Attempt a single read-only call — `client.health()` if
    confirmed in the loaded docs, otherwise the first read-only API the
    chosen route requires.
+4. **Check provider/model readiness.** After the engine probe succeeds,
+   call `client.providers.config()` when available. Use
+   `client.providers.catalog()` to show available provider/model choices
+   if no default is configured. Treat model readiness as separate from
+   Codex auth:
+   - If Tandem reports a configured default provider/model, use that as
+     the default unless the user asks for something else.
+   - If Tandem reports no configured provider/default, pause before any
+     validation, apply, or run that would execute model work. Guide the
+     user to Tandem's provider settings or a trusted local SDK/CLI setup
+     flow.
+   - If only sketching a workflow locally, omit `model_policy` or mark it
+     as `engine default / TODO`; do not invent `provider_id` or
+     `model_id`.
+   - Never request provider API keys in the Codex chat. If local setup is
+     needed, tell the user to enter keys in the Tandem control panel or
+     pass them directly to `client.providers.setApiKey(providerId,
+     apiKey)` from a private local script/session.
 
 If the probe fails with a connection error, `401`, or `403`:
 
@@ -138,7 +163,11 @@ For each agent in the workflow, fill these fields explicitly:
 
 - `agent_id` (kebab-case, stable)
 - `display_name`
-- `model_policy.default_model: { provider_id, model_id }`
+- `model_policy.default_model: { provider_id, model_id }` only when
+  confirmed by `client.providers.config()`, selected by the user, or
+  accepted from Tandem's configured engine default. Otherwise leave the
+  policy unset for engine validation or mark it as a TODO in local-only
+  drafts.
 - `tool_policy.allowlist[]` and `denylist[]`
 - `mcp_policy.allowed_servers[]` and `allowed_tools[]`
 - `approval_policy` (use `"auto"` only when the agent does **no** external
@@ -188,9 +217,15 @@ Blocking questions are ones the engine will fail without. Examples:
 
 **Not** blocking:
 
-- Default model choices (Tandem has fallbacks).
+- Exact model choices when Tandem already has a configured default
+  provider/model.
 - MCP discovery (Tandem can list connected servers).
 - Optional metadata.
+
+**Blocking:**
+
+- No Tandem provider/model is configured and the next step would validate,
+  apply, or run model-executing workflow code.
 
 ### Step 6 — Validate via the API
 

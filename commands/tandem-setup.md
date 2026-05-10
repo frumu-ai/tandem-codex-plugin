@@ -1,6 +1,6 @@
 ---
 title: /tandem-setup
-description: Discover where the local Tandem engine and token are configured. Docs-driven walkthrough — does not assume a specific install path or token location.
+description: Discover where the local Tandem engine, token, providers, and default model are configured. Docs-driven walkthrough — does not assume a specific install path or token location.
 ---
 
 You are operating under the **tandem-workflow-plan-mode** skill.
@@ -8,14 +8,16 @@ You are operating under the **tandem-workflow-plan-mode** skill.
 ## Purpose
 
 Help the user discover (or rediscover) how Tandem is installed on this
-machine and where the engine token lives. This command is **docs-driven
-guidance**, not a "the token is definitely at <path>" statement.
+machine, where the engine token lives, and whether Tandem has model
+providers/defaults configured. This command is **docs-driven guidance**,
+not a "the token is definitely at <path>" statement.
 
 Use this when:
 
 - A user has just installed the plugin and isn't sure how to point it at
   an engine.
 - `/tandem-doctor` reported a missing token or a connection failure.
+- `/tandem-doctor` reported missing provider/model readiness.
 - The user switched between the headless engine and the control panel
   and isn't sure which token is current.
 
@@ -80,11 +82,44 @@ Without echoing values, report:
 - `TANDEM_API_TOKEN_FILE`: "set: `<path>`" or "unset" (path is fine to
   show; token contents are not)
 - `TANDEM_UNSAFE_NO_API_TOKEN`: "set (unsafe)" or "unset"
+- Provider-key env vars such as `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`,
+  and `OPENROUTER_API_KEY`: "set" or "unset" only. Never echo values.
 
-### Step 5 — Suggest next
+### Step 5 — Explain provider/model setup
+
+Make this separation explicit:
+
+- Codex authentication lets the user run Codex.
+- Tandem engine authentication lets Codex talk to the Tandem engine.
+- Tandem model-provider authentication lets the Tandem engine run model
+  work. Codex auth does **not** automatically configure Tandem providers.
+
+Recommended setup path:
+
+1. Open the Tandem control panel.
+2. Go to Settings → Providers / Models (wording may vary by Tandem
+   version).
+3. Connect the provider account or enter the provider key there.
+4. Choose a default provider and model.
+5. Re-run `/tandem-doctor`.
+
+SDK surface available for trusted local scripts:
+
+```ts
+await client.providers.catalog();              // list providers/models
+await client.providers.config();               // current defaults/status
+await client.providers.setApiKey(id, apiKey);  // store provider key
+await client.providers.setDefaults(id, model); // choose default model
+```
+
+Do not ask the user to paste provider API keys into Codex chat. If they
+want local CLI/script setup, tell them to run it in their shell or enter
+the key in the Tandem control panel.
+
+### Step 6 — Suggest next
 
 End with: "Run `/tandem-doctor` to verify the engine is reachable and
-the token works."
+the token and provider/model setup work."
 
 ## Behaviour rules
 
@@ -93,7 +128,7 @@ the token works."
   its output".
 - **Do not** modify files, env vars, or run setup commands. This is
   read-only guidance.
-- **Never** echo the token value, even partially.
+- **Never** echo the token value or provider API keys, even partially.
 - Reference [`shared/tandem-auth.md`](../shared/tandem-auth.md) for the
   full recipe.
 
@@ -105,4 +140,5 @@ A short structured response with these sections, in order:
 2. Install paths (A and B).
 3. Token discovery order.
 4. Accepted headers.
-5. Suggested next command.
+5. Provider/model setup.
+6. Suggested next command.
