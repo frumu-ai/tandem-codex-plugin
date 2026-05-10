@@ -10,10 +10,13 @@
   "scripts": {
     "healthcheck": "tsx scripts/tandem-api-healthcheck.ts",
     "create-draft": "tsx scripts/tandem-create-workflow-draft.ts",
-    "preview": "tsx scripts/tandem-preview-workflow.ts"
+    "preview": "tsx scripts/tandem-preview-workflow.ts",
+    "revise": "tsx scripts/tandem-revise-workflow.ts",
+    "apply": "tsx scripts/tandem-apply-workflow.ts",
+    "import-plan": "tsx scripts/tandem-import-plan.ts"
   },
   "dependencies": {
-    "@frumu/tandem-client": "^0.1.0",
+    "@frumu/tandem-client": "^0.5.4",
     "dotenv": "^16.4.5"
   },
   "devDependencies": {

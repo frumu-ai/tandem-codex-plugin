@@ -2,11 +2,19 @@
 /**
  * Start a Tandem workflow-plan chat from a goal in plain English.
  *
+ * Calls `client.workflowPlans.chatStart({ prompt, planSource, workspaceRoot? })`
+ * with `planSource: "intent_planner_page"` (the planner-page surface
+ * documented in @frumu/tandem-client's README) and optionally a
+ * `workspaceRoot` from TANDEM_WORKSPACE_ROOT when the workflow is
+ * scoped to a checkout.
+ *
  * Usage:
  *   npm run create-draft -- "Daily Reddit research to Notion"
+ *   TANDEM_WORKSPACE_ROOT=/work/repos/foo npm run create-draft -- "..."
  *
- * Prints the resulting plan_id and a draft summary. Iterate with
- * `client.workflowPlans.chatMessage` (use /revise-workflow in Codex).
+ * Prints the resulting plan_id and the engine's full draft response.
+ * Iterate with `npm run revise -- <plan_id> "<change>"` (or
+ * `/revise-workflow` in Codex).
  *
  * Raw-fetch alternative kept here for transparency:
  *
@@ -16,46 +24,38 @@
  *       "content-type": "application/json",
  *       Authorization: `Bearer ${token}`,
  *     },
- *     body: JSON.stringify({ prompt, planSource: "chat" })
+ *     body: JSON.stringify({
+ *       prompt,
+ *       plan_source: "intent_planner_page",
+ *       workspace_root: workspaceRoot,
+ *     })
  *   });
  *   const data = await res.json();
  *   console.log(data.plan?.plan_id, data.plan?.summary);
  */
 
 import "dotenv/config";
-import { TandemClient } from "@frumu/tandem-client";
-
-function envOrDie(name: string, fallback?: string): string {
-  const v = process.env[name] ?? fallback;
-  if (v === undefined || v === "") {
-    console.error(`[tandem-codex-plugin] Missing env: ${name}`);
-    console.error(`See shared/tandem-auth.md for token sources.`);
-    process.exit(2);
-  }
-  return v;
-}
+import { createClient, resolveWorkspaceRoot } from "./lib/tandem-config.ts";
 
 async function main() {
   const goal = process.argv.slice(2).join(" ").trim();
   if (!goal) {
-    console.error(
-      'Usage: npm run create-draft -- "<one-line workflow goal>"',
-    );
+    console.error('Usage: npm run create-draft -- "<one-line workflow goal>"');
     process.exit(64);
   }
 
-  const baseUrl = envOrDie("TANDEM_BASE_URL", "http://127.0.0.1:39731");
-  const tokenless = process.env.TANDEM_UNSAFE_NO_API_TOKEN === "1";
-  const token = tokenless ? "" : envOrDie("TANDEM_API_TOKEN");
-
-  const client = new TandemClient({ baseUrl, token });
+  const { client } = createClient();
+  const workspaceRoot = resolveWorkspaceRoot();
 
   try {
     const draft = await client.workflowPlans.chatStart({
       prompt: goal,
-      planSource: "chat",
+      planSource: "intent_planner_page",
+      ...(workspaceRoot ? { workspaceRoot } : {}),
     });
-    const planId = draft.plan?.plan_id ?? draft.plan_id;
+    const planId =
+      (draft as { plan?: { plan_id?: string } }).plan?.plan_id ??
+      (draft as { plan_id?: string }).plan_id;
     console.log(JSON.stringify({ plan_id: planId, draft }, null, 2));
     if (!planId) {
       console.error(
@@ -64,7 +64,7 @@ async function main() {
       process.exit(1);
     }
     console.error(
-      `\nNext: iterate with chatMessage, then run /preview-workflow ${planId}`,
+      `\nNext: \`npm run revise -- ${planId} "<change>"\` or /revise-workflow ${planId}`,
     );
     process.exit(0);
   } catch (err) {

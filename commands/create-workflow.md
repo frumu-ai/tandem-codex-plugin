@@ -1,6 +1,6 @@
 ---
 title: /create-workflow
-description: Design a new Tandem workflow from intent. Creates a planner draft, iterates with the user, validates, and applies only on approval.
+description: Design a new Tandem workflow from intent. Starts a workflow-plan chat, iterates with the user, and hands the plan_id off for /apply-workflow. Never auto-applies.
 ---
 
 You are operating under the **tandem-workflow-plan-mode** skill. Run the
@@ -11,39 +11,43 @@ plan-mode loop for the **Intent → workflow** route.
 1. Asks the user for the workflow's goal in plain language (one short
    prompt). If the user already gave the goal in their message, skip the
    ask.
-2. Calls `client.workflowPlans.chatStart({ prompt, planSource: "chat" })`
+2. Calls
+   `client.workflowPlans.chatStart({ prompt, planSource: "intent_planner_page", workspaceRoot? })`
    via the helper script `scripts/tandem-create-workflow-draft.ts`, or
    directly via the SDK if invoked inside a Tandem-enabled session.
-3. Prints the returned `plan_id` and the draft DAG summary.
-4. Iterates with `client.workflowPlans.chatMessage({ plan_id, message })`
-   until the user says they're satisfied.
-5. Validates via `client.workflowPlans.preview({ plan_id })`.
-6. Applies *only on explicit user approval* via
-   `client.workflowPlans.apply({ plan_id, creator_id: "codex-plugin" })`.
+3. Prints the returned `plan_id` and the engine's draft summary.
+4. Iterates with `client.workflowPlans.chatMessage({ planId, message })`
+   (one revision per turn) until the user says they're satisfied.
+5. Hands the `plan_id` off to `/apply-workflow <plan_id>`. **Do not**
+   apply from this command.
 
 ## Required inputs
 
-- `TANDEM_BASE_URL` and `TANDEM_API_TOKEN` available in env (see
-  `shared/tandem-auth.md`).
+- `TANDEM_BASE_URL` and a resolvable engine token (see
+  `shared/tandem-auth.md` and `/tandem-setup`).
 - A running Tandem engine reachable at `TANDEM_BASE_URL`.
+- Optional: `TANDEM_WORKSPACE_ROOT` when the workflow is scoped to a
+  specific checkout.
 
 ## Behaviour rules
 
-- Do not call `runNow` from this command. Use `/run-workflow` for that.
-- Always set `creator_id: "codex-plugin"` when applying.
-- If `chatStart` fails because of auth, surface the engine error verbatim
-  and point at `shared/tandem-auth.md`.
+- Use `planSource: "intent_planner_page"`. Older plugin versions used
+  `"chat"`; the SDK README documents `"intent_planner_page"` for the
+  planner-page surface.
+- Never call `apply`, `importPreview`, `importPlan`, or `runNow` from
+  this command.
+- Surface engine errors verbatim. On `401` / `403`, route the user to
+  `/tandem-doctor`.
 - If the user's goal involves any external write (Notion, Slack, email,
-  GitHub, etc.), explicitly confirm the approval gate **before** apply.
+  GitHub, etc.), explicitly note the approval gates the engine's draft
+  applies before suggesting `/apply-workflow`.
 
 ## Output
 
-Final response in this command should be a numbered checklist:
+A short structured response:
 
-1. `plan_id` and one-line summary of the draft.
-2. Approval gates surfaced from the preview.
-3. Suggested next command (`/preview-workflow <plan_id>` or
-   `/validate-workflow <plan_id>` or `/run-workflow <automation_id>` after
-   apply).
-
-If apply succeeded, include the resulting automation id.
+1. `plan_id` and one-line summary of the engine's draft.
+2. Any approval gates the draft already includes (verbatim).
+3. Suggested next:
+   - `/revise-workflow <plan_id> "<change>"` if the user wants iteration.
+   - `/apply-workflow <plan_id>` once the draft looks right.

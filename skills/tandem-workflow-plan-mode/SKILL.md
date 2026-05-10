@@ -49,9 +49,17 @@ that Tandem's engine will execute.
    - first-time use of a new MCP tool
    - any tool not on the agent's current allowlist
    - schedule changes that broaden scope
-6. **Source of truth is the Tandem engine.** Prefer
-   `client.workflowPlans.preview` / `automationsV2.create(status:"paused")`
-   for validation over local guessing.
+6. **Source of truth is the Tandem engine.** Prefer the verified
+   entry points over local guessing:
+   - `client.workflowPlans.preview({ prompt, planSource, workspaceRoot? })`
+     for one-shot prompt validation.
+   - `client.workflowPlans.chatMessage({ planId, message })` round-trips
+     for in-progress chat drafts (the engine returns the latest plan +
+     validation in each response).
+   - `client.workflowPlans.importPreview({ bundle })` for imported
+     bundles or post-`apply` compatibility checks.
+   - `client.automationsV2.create({ ...payload, status: "paused" })`
+     for V2 DAGs.
 
 If any of these rules conflict with the user's request, stop and surface
 the conflict before continuing.
@@ -70,10 +78,10 @@ authenticated:
    - `TANDEM_API_TOKEN` env var.
    - `TANDEM_API_TOKEN_FILE` env var pointing at a readable, non-empty
      file.
-   - SDK `token` constructor option (only available to scripts that
-     accept one).
-   - If none is set and `TANDEM_UNSAFE_NO_API_TOKEN=1` is set, warn
-     and continue. Otherwise treat the token as unset.
+   The resolved string is then passed as `token` to the
+   `TandemClient` constructor (the SDK does not itself read env vars
+   or files). If neither is set and `TANDEM_UNSAFE_NO_API_TOKEN=1` is
+   set, warn and continue. Otherwise treat the token as unset.
 3. **Probe.** Attempt a single read-only call — `client.health()` if
    confirmed in the loaded docs, otherwise the first read-only API the
    chosen route requires.
@@ -186,12 +194,17 @@ Blocking questions are ones the engine will fail without. Examples:
 
 ### Step 6 — Validate via the API
 
-Run one of:
+Pick the call that matches the route:
 
-- `client.workflowPlans.preview(plan_id)`
-- `client.automationsV2.create({ ...payload, status: "paused" })` and
-  inspect the returned errors.
-- For imported bundles: `client.workflowPlans.importPreview`.
+- **One-shot prompt** (no plan_id yet):
+  `client.workflowPlans.preview({ prompt, planSource: "intent_planner_page", workspaceRoot? })`.
+- **In-progress chat draft** (you have a `plan_id`): inspect the
+  validation in the latest `client.workflowPlans.chatMessage`
+  response. The SDK's `preview` is **not** a "preview-by-plan_id"
+  call — do not invent that signature.
+- **Imported bundle:** `client.workflowPlans.importPreview({ bundle })`.
+- **V2 DAG:** `client.automationsV2.create({ ...payload, status: "paused" })`
+  and inspect the returned errors.
 
 Show the engine's response verbatim. If validation fails, fix and re-run.
 **Do not** smooth over engine errors.
@@ -202,8 +215,15 @@ Confirm: "Should I apply this plan / arm this automation?"
 
 On a clear yes:
 
-- Plans: `client.workflowPlans.apply({ plan_id, creator_id })`.
-- Automations: `client.automationsV2.update({ id, status: "active" })`.
+- **Plans:** `client.workflowPlans.apply({ planId, creatorId })`. Then
+  optionally `client.workflowPlans.importPreview({ bundle: applied.plan_package_bundle })`
+  so the user sees the engine's compatibility report. Final
+  `client.workflowPlans.importPlan({ bundle })` requires a separate
+  explicit approval — route the user to `/import-preview-workflow`.
+- **Automations:** flip `status: "paused" → "active"` via the Tandem
+  control panel (or an automations PATCH endpoint if the engine
+  exposes one — *not yet verified in `@frumu/tandem-client`'s public
+  surface*).
 
 Then stop. Do **not** call `runNow` unless the user asked for that
 specifically.
@@ -259,9 +279,22 @@ See `shared/tandem-output-contracts.md` for the five contract patterns.
   `shared/tandem-api-discovery-notes.md`
 
 When the user invokes `/create-workflow`, `/revise-workflow`,
-`/build-complex-workflow`, `/preview-workflow`, `/validate-workflow`, or
-`/run-workflow`, follow the corresponding `commands/<name>.md` template
-on top of this loop.
+`/build-complex-workflow`, `/preview-workflow`, `/validate-workflow`,
+`/apply-workflow`, `/import-preview-workflow`, or `/run-workflow`,
+follow the corresponding `commands/<name>.md` template on top of this
+loop.
+
+The documented planner-page flow (per `@frumu/tandem-client`) is:
+
+```
+chatStart  →  chatMessage (loop until satisfactory)  →  apply  →  importPreview  →  importPlan
+```
+
+`/create-workflow` runs `chatStart`. `/revise-workflow` runs
+`chatMessage`. `/apply-workflow` runs `apply` and follows up with
+`importPreview` (but not `importPlan`). `/import-preview-workflow`
+runs `importPreview` against a bundle file and gates `importPlan`
+behind explicit user approval.
 
 For engine-setup discovery and connectivity diagnostics, use
 `/tandem-setup` and `/tandem-doctor` — the pre-flight section above

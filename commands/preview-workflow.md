@@ -1,6 +1,6 @@
 ---
 title: /preview-workflow
-description: Preview a Tandem workflow plan or imported bundle without applying. Surfaces the engine's view of the DAG, schedule, and policies.
+description: One-shot Tandem workflow preview from a plain-language prompt or an imported bundle JSON file. Read-only.
 ---
 
 You are operating under the **tandem-workflow-plan-mode** skill.
@@ -8,30 +8,39 @@ You are operating under the **tandem-workflow-plan-mode** skill.
 ## Usage
 
 ```
-/preview-workflow <plan_id | path-to-bundle.json>
+/preview-workflow "<one-line workflow goal>"
+/preview-workflow ./path/to/bundle.json
 ```
 
 If neither is supplied, ask the user once for one.
 
 ## What this command does
 
-- If the argument looks like a `plan_id` (Tandem-issued id, no slashes,
-  no `.json`):
-  - Calls `client.workflowPlans.preview({ plan_id })` and prints the
-    engine's preview verbatim.
-- If the argument is a path to a JSON bundle:
-  - Reads the file (must be readable from the current workspace).
-  - Calls `client.workflowPlans.importPreview({ bundle })` and prints
-    the engine's preview.
+The `@frumu/tandem-client` SDK exposes `workflowPlans.preview` as a
+**prompt-based one-shot**, not a "preview by `plan_id`" call. The
+canonical README example takes `{ prompt, planSource, workspaceRoot? }`.
+For drafts that came from `chatStart` (i.e. you have a `plan_id`), the
+documented flow is `apply → importPreview` on the returned bundle —
+that's `/apply-workflow`'s job.
+
+This command branches on its argument:
+
+- **Prompt path** (no `/`, no `.json`): calls
+  `client.workflowPlans.preview({ prompt, planSource: "intent_planner_page", workspaceRoot? })`
+  and prints the engine's response verbatim.
+- **Bundle path**: reads and parses the JSON file, then calls
+  `client.workflowPlans.importPreview({ bundle })`.
 
 ## Behaviour rules
 
-- Never modify the plan or bundle. Preview is read-only.
+- Read-only. Never mutate the plan or bundle.
 - Print the preview's full DAG, schedule, approval gates, and any
-  validation errors.
-- Recommend `/validate-workflow` next if there are validation errors.
-- Recommend `/run-workflow <id>` only when the user has explicitly
-  applied and is ready to trigger.
+  validation errors verbatim.
+- For the prompt path, return the engine's draft view *without*
+  starting a chat session. To iterate, use `/create-workflow` (which
+  starts a `chatStart` session).
+- For the bundle path, recommend `/import-preview-workflow` next when
+  the user wants to commit the bundle.
 
 ## Output
 
@@ -41,6 +50,6 @@ A short structured response:
 - **Agents** (one line each)
 - **Nodes** (one line each, with approval gates flagged)
 - **Validation errors** (if any, verbatim)
-- **Suggested next:** `/validate-workflow <plan_id>`,
-  `/create-workflow` (if user wants to start over), or
-  apply via `/create-workflow` continuation.
+- **Suggested next:**
+  - prompt path with errors → `/create-workflow` (start a chat draft).
+  - bundle path → `/import-preview-workflow ./path/to/bundle.json`.

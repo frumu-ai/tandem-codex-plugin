@@ -115,15 +115,18 @@ running `/tandem-setup` in Codex, and verify everything end-to-end with
 
 ## 6. Configure plugin auth
 
-The plugin and the bundled `@frumu/tandem-client` SDK look for the engine
-token in this order:
+The `@frumu/tandem-client` `TandemClient` constructor takes a string
+`token`; the SDK does not itself read env vars or files. The plugin's
+helper scripts (`scripts/`) resolve the token from the environment in
+this order, then pass the resulting string to the SDK constructor:
 
 1. `TANDEM_API_TOKEN` environment variable.
 2. `TANDEM_API_TOKEN_FILE` environment variable pointing at a file that
-   contains the token. Path is whatever your installer chose — the plugin
-   does not assume a location.
-3. The SDK's `token` constructor option (used by the helper scripts in
-   `scripts/` after they load `.env`).
+   contains the token. The scripts read and trim the file. Path is
+   whatever your installer chose — the plugin does not assume a
+   location.
+3. (Calling the SDK directly outside the plugin?) Pass `token` to
+   `new TandemClient({ baseUrl, token })` yourself.
 
 A dev-only escape hatch (`TANDEM_UNSAFE_NO_API_TOKEN=1`) is supported but
 **not recommended**. The engine logs a warning on every request when this
@@ -168,21 +171,37 @@ Full design rules: [`shared/tandem-workflow-design-rules.md`](./shared/tandem-wo
 ```
 
 Describe the goal in plain language. The skill calls
-`client.workflowPlans.chatStart`, returns a `plan_id`, and shows the draft
-DAG. Iterate with:
+`client.workflowPlans.chatStart({ prompt, planSource: "intent_planner_page", workspaceRoot? })`,
+returns a `plan_id`, and shows the draft DAG. Iterate with:
 
 ```
-/revise-workflow <plan_id>
+/revise-workflow <plan_id> "<change>"
 ```
 
-When ready:
+When ready, apply (this calls `workflowPlans.apply` and follows up with
+`importPreview` so you see the engine's compatibility report):
 
 ```
-/preview-workflow <plan_id>
-/validate-workflow <plan_id>
+/apply-workflow <plan_id>
 ```
 
-Then, after explicit approval, the skill calls `client.workflowPlans.apply`.
+If `importPreview` reports compatible, finalize the import behind a
+final explicit approval:
+
+```
+/import-preview-workflow ./path/to/bundle.json
+```
+
+For one-shot prompt validation (no chat session) or to preview a bundle
+without applying:
+
+```
+/preview-workflow "<one-line workflow goal>"
+/preview-workflow ./path/to/bundle.json
+```
+
+The full documented flow is
+`chatStart → chatMessage → apply → importPreview → importPlan`.
 
 Worked example: [`examples/reddit-research-to-notion.md`](./examples/reddit-research-to-notion.md).
 
@@ -250,17 +269,21 @@ plugin layout.
 .agents/plugins/marketplace.json Repo-scoped marketplace entry
 .mcp.json                        Plugin-bundled MCP config (empty by default)
 skills/tandem-workflow-plan-mode/SKILL.md
-commands/{create,revise,build-complex,preview,validate,run}-workflow.md
+commands/{create,revise,build-complex,preview,validate,apply,import-preview,run}-workflow.md
 commands/{tandem-setup,tandem-doctor}.md
+scripts/lib/tandem-config.ts        Shared base-URL/token resolution + client factory
+scripts/tandem-api-healthcheck.ts
+scripts/tandem-create-workflow-draft.ts
+scripts/tandem-preview-workflow.ts
+scripts/tandem-revise-workflow.ts
+scripts/tandem-apply-workflow.ts
+scripts/tandem-import-plan.ts
 shared/tandem-workflow-design-rules.md
 shared/tandem-api-discovery-notes.md
 shared/tandem-output-contracts.md
 shared/tandem-approval-gates.md
 shared/tandem-auth.md
 examples/{reddit-research-to-notion,github-bug-monitor,manual-complex-workflow,repo-task-runner}.md
-scripts/tandem-api-healthcheck.ts
-scripts/tandem-create-workflow-draft.ts
-scripts/tandem-preview-workflow.ts
 ```
 
 ## References
