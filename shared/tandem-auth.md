@@ -17,15 +17,15 @@ Two supported install paths. Pick one.
 ```bash
 npm install -g @frumu/tandem @frumu/tandem-tui
 tandem doctor
-tandem engine status
+tandem-engine status
 tandem-engine serve --hostname 127.0.0.1 --port 39731
 ```
 
 `@frumu/tandem` ships the `tandem` master CLI and direct
 `tandem-engine` runtime. `@frumu/tandem-tui` ships `tandem-tui`. Use
 this on servers, CI, or any machine that wants terminal-first setup.
-The engine can be started through `tandem serve ...` or directly with
-`tandem-engine serve ...`.
+Use `tandem-engine` for engine-specific commands such as `serve`,
+`status`, `providers`, and `token generate`.
 
 ### B. Control panel
 
@@ -180,7 +180,7 @@ hints) is `/tandem-doctor`.
 | `401 Unauthorized` | No token sent | Check env var or header. |
 | `401` despite token | Token rotated or expired | Regenerate with `tandem-engine token generate`. |
 | `403 Forbidden` | Endpoint requires a different scope (e.g. control-panel-only) | Use the control panel or escalate scope. |
-| `connection refused` | Engine not running | Start with `tandem serve ...` or `tandem-engine serve ...`; for panel setup run `tandem panel init`. |
+| `connection refused` | Engine not running | Start with `tandem-engine serve ...`; for panel setup run `tandem panel init`. |
 | Engine logs warn `unsafe-no-token` | `TANDEM_UNSAFE_NO_API_TOKEN=1` is set | Unset for any non-trusted-local-dev use. |
 
 ---

@@ -88,15 +88,15 @@ The plugin doesn't bundle the engine. Pick one of two supported paths:
 ```bash
 npm install -g @frumu/tandem @frumu/tandem-tui
 tandem doctor
-tandem engine status
+tandem-engine status
 tandem-engine serve --hostname 127.0.0.1 --port 39731
 ```
 
 `@frumu/tandem` ships the `tandem` master CLI and direct
 `tandem-engine` runtime. `@frumu/tandem-tui` ships `tandem-tui`. Use
 this path on servers, in CI, or when you want terminal-first setup.
-You can start the engine through the master CLI (`tandem serve ...`) or
-the direct runtime (`tandem-engine serve ...`).
+Use `tandem-engine` for engine-specific commands such as `serve`,
+`status`, `providers`, and `token generate`.
 
 ### B. Control panel (recommended for local dev)
 
@@ -116,8 +116,8 @@ against the same engine the plugin talks to.
 > above unless documentation you trust says otherwise for your version.
 
 After either path the engine listens on `TANDEM_BASE_URL` (default
-`http://127.0.0.1:39731`). Run Tandem's first-run checks (`tandem doctor`,
-`tandem status`, `tandem service status`, `tandem engine status`), then
+`http://127.0.0.1:39731`). Run Tandem's first-run checks (`tandem doctor`
+for the master CLI and `tandem-engine status` for the engine), then
 discover where the installer wrote the token by running `/tandem-setup`
 in Codex and verify everything end-to-end with `/tandem-doctor`.
 

@@ -32,16 +32,16 @@ State both options. Do not pick one for the user unless they ask.
 ```bash
 npm install -g @frumu/tandem @frumu/tandem-tui
 tandem doctor
-tandem engine status
+tandem-engine status
 tandem-engine serve --hostname 127.0.0.1 --port 39731
 ```
 
 `@frumu/tandem` provides the `tandem` master CLI and direct
 `tandem-engine` runtime. `@frumu/tandem-tui` provides `tandem-tui`.
-The `tandem` master CLI is where checks like `tandem doctor`,
-`tandem status`, `tandem service status`, `tandem engine status`, and
-`tandem panel ...` come from. Best for servers, CI, or terminal-first
-local use.
+Use `tandem-engine` for engine-specific commands like `serve`, `status`,
+`providers`, and `token generate`. Use the `tandem` master CLI for
+top-level diagnostics such as `tandem doctor` and add-ons such as
+`tandem panel ...`. Best for servers, CI, or terminal-first local use.
 
 **B. Control panel**
 
@@ -103,8 +103,8 @@ Make this separation explicit:
 
 Recommended setup path:
 
-1. Run Tandem's first-run checks: `tandem doctor`, `tandem status`,
-   `tandem service status`, and `tandem engine status`.
+1. Run Tandem's first-run checks: `tandem doctor` and
+   `tandem-engine status`.
 2. Configure provider credentials through the TUI setup flow,
    environment/config, or the control panel's Settings → Providers /
    Models area.
