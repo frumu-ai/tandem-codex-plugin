@@ -2,6 +2,8 @@
 
 **Plan with Codex. Govern with Tandem. Run with receipts.**
 
+![Tandem Codex Plugin overview](./assets/readme-hero.png)
+
 A Codex CLI plugin that turns Codex into a *Tandem Workflow Architect*: a
 plan-mode design partner that helps you shape Tandem workflows (V2
 automations and workflow plans) and hands them to the Tandem engine for
