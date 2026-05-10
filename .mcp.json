@@ -1,4 +1,3 @@
 {
-  "_comment": "Plugin-bundled MCP server config. Codex merges this with user's ~/.codex/config.toml MCP servers. Each example workflow in examples/ documents which MCP servers it expects. Users add the specific servers they need (notion, slack, github, reddit, etc.) here or in their global Codex config. Below is one commented illustrative entry for Composio HTTP MCP — uncomment and fill in to use. Most teams will leave this empty and configure MCP servers per-workflow in Tandem itself.",
   "mcpServers": {}
 }
