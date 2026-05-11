@@ -1,13 +1,25 @@
-# Tandem Codex Plugin
+<div align="center">
+  <img src="./assets/readme-hero.png" alt="Tandem Codex Plugin" width="500">
 
-**Plan with Codex. Govern with Tandem. Run with receipts.**
+  <h1>Tandem Codex Plugin</h1>
 
-![Tandem Codex Plugin overview](./assets/readme-hero.png)
+  <p><strong>Plan with Codex. Govern with Tandem. Run with receipts.</strong></p>
 
-A Codex CLI plugin that turns Codex into a *Tandem Workflow Architect*: a
-plan-mode design partner that helps you shape Tandem workflows (V2
-automations and workflow plans) and hands them to the Tandem engine for
-validation, preview, and run.
+  <p>
+    A Codex CLI plugin that turns Codex into a <em>Tandem Workflow Architect</em>:
+    a plan-mode design partner that helps you shape Tandem workflows and hands
+    them to the Tandem engine for validation, preview, and run.
+  </p>
+
+  <p>
+    <a href="https://tandem.ac/"><img src="https://img.shields.io/website?url=https%3A%2F%2Ftandem.ac%2F&label=tandem.ac&logo=firefox&style=for-the-badge" alt="Website"></a>
+    <a href="https://docs.tandem.ac/"><img src="https://img.shields.io/badge/docs-tandem.ac-2563EB?logo=readthedocs&logoColor=white&style=for-the-badge" alt="Docs"></a>
+    <a href="https://github.com/frumu-ai/tandem"><img src="https://img.shields.io/badge/github-frumu--ai%2Ftandem-181717?logo=github&style=for-the-badge" alt="Tandem GitHub"></a>
+    <a href="https://github.com/frumu-ai/tandem-codex-plugin"><img src="https://img.shields.io/badge/plugin-repo-181717?logo=github&style=for-the-badge" alt="Plugin Repository"></a>
+    <a href="https://github.com/frumu-ai/tandem-codex-plugin/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/frumu-ai/tandem-codex-plugin/ci.yml?branch=main&label=CI&style=for-the-badge" alt="CI"></a>
+    <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge" alt="License: MIT"></a>
+  </p>
+</div>
 
 > Codex helps you think. Tandem runs and governs. This plugin glues the two
 > together without replacing either.
@@ -20,8 +32,8 @@ A focused Codex plugin (skill + Tandem Docs MCP + shared design rules + worked
 examples) that:
 
 - Walks you through designing a Tandem workflow from intent
-  (`/create-workflow`) or by hand-assembling a complex multi-agent DAG
-  (`/build-complex-workflow`).
+  (`/create-workflow` template) or by hand-assembling a complex multi-agent DAG
+  (`/build-complex-workflow` template).
 - Calls the **real Tandem HTTP API** to draft, preview, validate, and apply
   workflows — so the engine is always the source of truth.
 - Bakes in Tandem's actual policy primitives: `tool_policy`, `mcp_policy`,
@@ -70,6 +82,11 @@ In the Codex TUI:
 
 Find **Tandem Workflow Architect** and install it. The plugin skill and
 bundled Tandem Docs MCP server appear once installed.
+
+The files in `commands/` are workflow templates the skill can follow.
+Some Codex builds may expose them as slash commands; if yours does not,
+describe the same goal in chat and the skill will use the corresponding
+template.
 
 You can pin a branch, tag, or commit with:
 
@@ -291,7 +308,8 @@ Tandem already knows how to manage workflow MCP servers. The plugin's job is to:
 - Help you decide **which** MCP tools each agent needs.
 - Generate explicit `mcp_policy.allowed_servers` and
   `mcp_policy.allowed_tools` for each agent.
-- Call out when an MCP isn't connected yet (`mcp_list`, `mcp_list_catalog`)
+- Call out when an MCP isn't connected yet (`client.mcp.list()`,
+  `client.mcp.listTools()`)
   and refuse to fabricate a tool name.
 
 The plugin bundles the Tandem Docs MCP server at `https://tandem.ac/mcp` so

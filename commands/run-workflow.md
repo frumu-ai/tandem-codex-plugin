@@ -31,9 +31,9 @@ If `automation_id` is missing, ask once. Don't guess.
 
 ## Behaviour rules
 
-- If the automation `status: "paused"`, refuse and recommend the user
-  switch to `"active"` first (or apply a one-shot `runNow` if Tandem
-  supports that for paused automations — TODO: verify).
+- If the engine rejects the run because the automation is paused, surface
+  that error verbatim and recommend the user inspect/activate the
+  automation in the Tandem control panel first.
 - If any node has `requires_approval: true` and the user hasn't
   individually acknowledged each, list them and ask again before running.
 - Never call `runNow` on multiple automations in one command.
@@ -56,6 +56,4 @@ Watch:
 
 Approve / deny pending steps:
   via Tandem control panel "Scheduled Bots"
-  or
-  client.automationsV2.{approveRun, denyRun}(...)
 ```

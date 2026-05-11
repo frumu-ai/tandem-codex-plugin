@@ -6,7 +6,7 @@ means. The next stage's prompt reads those same field names. If the two
 stages disagree, the workflow breaks at runtime.
 
 > Whether Tandem has a named engine-level enum for these contracts is
-> still TODO (see `tandem-api-discovery-notes.md`). Until verified, treat
+> still open (see `tandem-api-discovery-notes.md`). Until verified, treat
 > these as **prompt patterns**, not engine enums.
 
 Five patterns cover most workflows. Pick one per node.

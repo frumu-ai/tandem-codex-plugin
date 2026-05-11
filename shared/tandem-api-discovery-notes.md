@@ -195,7 +195,7 @@ Surface only — full request body shape is not yet source-verified.
 
 ---
 
-## Open questions (TODO — verify in source)
+## Open questions to verify in source
 
 These are referenced by the user's original spec or by docs in ways
 we have not verified end-to-end. The plugin avoids fabricating them;

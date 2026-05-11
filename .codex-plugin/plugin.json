@@ -30,9 +30,9 @@
     "websiteURL": "https://github.com/frumu-ai/tandem-codex-plugin",
     "brandColor": "#2563EB",
     "defaultPrompt": [
-      "/create-workflow",
-      "/build-complex-workflow",
-      "/preview-workflow"
+      "Create a Tandem workflow from an intent",
+      "Build a complex Tandem workflow DAG",
+      "Preview or validate a Tandem workflow"
     ],
     "composerIcon": "./assets/icon.png",
     "logo": "./assets/icon.png"

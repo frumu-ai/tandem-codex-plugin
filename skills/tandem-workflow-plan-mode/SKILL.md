@@ -104,7 +104,7 @@ authenticated:
      user to Tandem's provider settings or a trusted local SDK/CLI setup
      flow.
    - If only sketching a workflow locally, omit `model_policy` or mark it
-     as `engine default / TODO`; do not invent `provider_id` or
+     as `engine default / not configured yet`; do not invent `provider_id` or
      `model_id`.
    - Never request provider API keys in the Codex chat. If local setup is
      needed, tell the user to enter keys in the Tandem control panel or
@@ -166,8 +166,8 @@ For each agent in the workflow, fill these fields explicitly:
 - `model_policy.default_model: { provider_id, model_id }` only when
   confirmed by `client.providers.config()`, selected by the user, or
   accepted from Tandem's configured engine default. Otherwise leave the
-  policy unset for engine validation or mark it as a TODO in local-only
-  drafts.
+  policy unset for engine validation or mark it as not configured yet in
+  local-only drafts.
 - `tool_policy.allowlist[]` and `denylist[]`
 - `mcp_policy.allowed_servers[]` and `allowed_tools[]`
 - `approval_policy` (use `"auto"` only when the agent does **no** external
