@@ -105,13 +105,16 @@ Recommended setup path:
 
 1. Run Tandem's first-run checks: `tandem doctor` and
    `tandem-engine status`.
-2. Configure provider credentials through the TUI setup flow,
-   environment/config, or the control panel's Settings → Providers /
-   Models area.
-3. Common provider env vars include `OPENAI_API_KEY`,
+2. List supported provider IDs with `tandem-engine providers`.
+3. Configure provider credentials through provider-specific env vars,
+   engine config, or a command-scoped `--api-key` when running
+   `tandem-engine serve`, `tandem-engine run`, or
+   `tandem-engine parallel`.
+4. Common provider env vars include `OPENAI_API_KEY`,
    `ANTHROPIC_API_KEY`, and `OPENROUTER_API_KEY`.
-4. Choose a default provider and model.
-5. Re-run `/tandem-doctor`.
+5. Choose provider/model defaults through engine config or command
+   options such as `--provider <id>` and `--model <id>`.
+6. Re-run `/tandem-doctor`.
 
 SDK surface available for trusted local scripts:
 
@@ -123,8 +126,8 @@ await client.providers.setDefaults(id, model); // choose default model
 ```
 
 Do not ask the user to paste provider API keys into Codex chat. If they
-want local CLI/script setup, tell them to run it in their shell or enter
-the key in the Tandem control panel.
+want local CLI/script setup, tell them to run it in their shell, engine
+config, or provider-specific env vars.
 
 ### Step 6 — Suggest next
 

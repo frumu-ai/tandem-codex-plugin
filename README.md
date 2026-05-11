@@ -186,11 +186,21 @@ Codex authentication is separate from Tandem provider authentication.
 Logging into Codex does not automatically give the Tandem engine access
 to OpenAI, Anthropic, OpenRouter, or any other model provider.
 
-For local dev, use the Tandem TUI setup flow, environment/config, or the
-control panel's Settings → Providers / Models area to connect a provider
-and choose a default model. Common provider env vars include
-`OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, and `OPENROUTER_API_KEY`. The SDK
-surface is also available for trusted local setup scripts:
+For local dev, configure model access through the Tandem engine. Use
+`tandem-engine providers` to list supported provider IDs, set
+provider-specific environment variables such as `OPENAI_API_KEY`,
+`ANTHROPIC_API_KEY`, or `OPENROUTER_API_KEY`, and choose provider/model
+defaults through engine config or command options:
+
+```bash
+tandem-engine providers
+tandem-engine serve --provider openai --model gpt-4o-mini
+tandem-engine run "Smoke test provider setup" --provider openai --model gpt-4o-mini
+```
+
+For one process or one command, `--api-key` can override the selected
+provider key. The SDK surface is also available for trusted local setup
+scripts:
 
 ```ts
 await client.providers.catalog();
@@ -199,9 +209,9 @@ await client.providers.setApiKey(providerId, apiKey);
 await client.providers.setDefaults(providerId, modelId);
 ```
 
-Do not paste provider API keys into Codex chat. Enter them in Tandem's
-control panel or pass them directly from a private local shell/session.
-Run `/tandem-doctor` after setup; it checks engine auth and
+Do not paste provider API keys into Codex chat. Pass them directly from
+a private local shell/session, engine config, or provider-specific env
+vars. Run `/tandem-doctor` after setup; it checks engine auth and
 provider/model readiness.
 
 ## 8. The plan-mode loop

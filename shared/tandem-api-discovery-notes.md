@@ -50,7 +50,7 @@ client.providers.authStatus();
 
 Codex authentication does not configure these providers. Workflows that
 execute model work need Tandem provider readiness from this API or from
-the Tandem control panel.
+engine configuration/CLI setup through `tandem-engine`.
 
 ### `client.workflowPlans` — source-verified shapes
 

@@ -85,7 +85,8 @@ authentication does not satisfy this requirement.
 
 - **Never** log or echo the token value. Only report source labels.
 - **Never** ask for or echo model-provider API keys. Provider keys belong
-  in Tandem's control panel or a private local SDK/CLI setup session.
+  in provider-specific env vars, engine config, or a private local
+  SDK/CLI setup session.
 - **Surface engine errors verbatim.** Do not paraphrase 401s, 403s, or
   network errors. They are the user's most actionable signal.
 - For each failed check, print one concrete next action:
@@ -93,9 +94,10 @@ authentication does not satisfy this requirement.
   - Engine unreachable: start the engine with `tandem-engine serve ...`;
     for panel setup run `tandem panel init`.
   - 401 / 403: `Rotate or re-export the token; see shared/tandem-auth.md`.
-  - Missing provider/default model: configure a provider through the TUI
-    setup flow, environment/config, or Tandem Settings → Providers /
-    Models, choose a default model, then re-run `/tandem-doctor`.
+  - Missing provider/default model: run `tandem-engine providers`,
+    configure provider credentials via env vars or engine config, choose
+    a provider/model with engine config or `--provider` / `--model`, then
+    re-run `/tandem-doctor`.
 - This command is **read-only**. It does not write files, mutate env, or
   start processes.
 - If `npm run healthcheck` is available in the workspace, you may invoke

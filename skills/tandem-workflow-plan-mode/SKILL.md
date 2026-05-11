@@ -39,7 +39,7 @@ that Tandem's engine will execute.
    engine an OpenAI, Anthropic, OpenRouter, or other model-provider
    credential. Discover provider/model readiness through
    `client.providers.config()` / `client.providers.catalog()` or ask the
-   user to configure providers in Tandem. Never ask the user to paste
+   user to configure providers through `tandem-engine`. Never ask the user to paste
    provider API keys into chat.
 5. **Never fabricate Tandem field names** that you are not 100% sure of.
    If a field is ambiguous (e.g. an execution-profile name, an enum
@@ -101,15 +101,17 @@ authenticated:
      the default unless the user asks for something else.
    - If Tandem reports no configured provider/default, pause before any
      validation, apply, or run that would execute model work. Guide the
-     user to Tandem's provider settings or a trusted local SDK/CLI setup
-     flow.
+     user to `tandem-engine providers`, provider-specific env vars,
+     engine config, or a trusted local SDK/CLI command.
    - If only sketching a workflow locally, omit `model_policy` or mark it
      as `engine default / not configured yet`; do not invent `provider_id` or
      `model_id`.
    - Never request provider API keys in the Codex chat. If local setup is
-     needed, tell the user to enter keys in the Tandem control panel or
-     pass them directly to `client.providers.setApiKey(providerId,
-     apiKey)` from a private local script/session.
+     needed, tell the user to use provider-specific env vars, engine
+     config, `tandem-engine serve --api-key` /
+     `tandem-engine run --api-key`, or pass keys directly
+     to `client.providers.setApiKey(providerId, apiKey)` from a private
+     local script/session.
 
 If the probe fails with a connection error, `401`, or `403`:
 

@@ -143,16 +143,28 @@ await client.providers.config();
 await client.providers.catalog();
 ```
 
-Configure provider keys and defaults in the Tandem control panel when
-available. For trusted local setup scripts, the SDK exposes:
+Configure provider keys and defaults through the Tandem engine:
+
+```bash
+tandem-engine providers
+tandem-engine serve --provider openai --model gpt-4o-mini
+tandem-engine run "Smoke test provider setup" --provider openai --model gpt-4o-mini
+```
+
+Provider-specific env vars such as `OPENAI_API_KEY`,
+`ANTHROPIC_API_KEY`, and `OPENROUTER_API_KEY` are read by the selected
+provider. For one process or one command, `--api-key` can override the
+selected provider key.
+
+For trusted local setup scripts, the SDK exposes:
 
 ```ts
 await client.providers.setApiKey(providerId, apiKey);
 await client.providers.setDefaults(providerId, modelId);
 ```
 
-Never paste model-provider API keys into Codex chat. Enter them in the
-Tandem control panel or pass them directly from a private local shell or
+Never paste model-provider API keys into Codex chat. Pass them directly
+from a private local shell, engine config, provider-specific env vars, or
 script.
 
 ---
