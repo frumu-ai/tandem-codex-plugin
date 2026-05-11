@@ -17,6 +17,7 @@
     <a href="https://github.com/frumu-ai/tandem"><img src="https://img.shields.io/badge/github-frumu--ai%2Ftandem-181717?logo=github&style=for-the-badge" alt="Tandem GitHub"></a>
     <a href="https://github.com/frumu-ai/tandem-codex-plugin"><img src="https://img.shields.io/badge/plugin-repo-181717?logo=github&style=for-the-badge" alt="Plugin Repository"></a>
     <a href="https://github.com/frumu-ai/tandem-codex-plugin/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/frumu-ai/tandem-codex-plugin/ci.yml?branch=main&label=CI&logo=github&style=for-the-badge" alt="CI"></a>
+    <a href="https://github.com/frumu-ai/tandem-codex-plugin/actions/workflows/plugin-scanner.yml"><img src="https://img.shields.io/github/actions/workflow/status/frumu-ai/tandem-codex-plugin/plugin-scanner.yml?branch=main&label=scanner&logo=shield&style=for-the-badge" alt="Plugin Scanner"></a>
     <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge" alt="License: MIT"></a>
   </p>
 </div>

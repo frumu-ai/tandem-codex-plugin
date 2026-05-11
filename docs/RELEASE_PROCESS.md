@@ -66,8 +66,10 @@ plugins by version, so every public release must bump that manifest.
 7. Watch GitHub Actions:
 
    - `CI` should pass on `main`.
+   - `Plugin Scanner` should pass the AI plugin quality gate.
    - `Release` should run from the tag, compile `release_notes.md`, and
-     create the GitHub Release body from the notes.
+     create the GitHub Release body from the notes. The release workflow
+     also runs the scanner gate before publishing the release.
 
 8. Smoke-test install:
 
