@@ -376,8 +376,9 @@ git push origin main --tags
 ```
 
 The `Release` GitHub Action runs on `v*.*.*` tags, checks that the tag
-matches the plugin version, runs `npm run build`, and creates a GitHub
-release with generated notes.
+matches the plugin version, runs `npm run build`, compiles release notes
+from `docs/WHATS_NEW_vX.Y.Z.md`, `RELEASE_NOTES.md`, or `CHANGELOG.md`
+(in that order), and creates a GitHub Release from the compiled notes.
 
 ---
 

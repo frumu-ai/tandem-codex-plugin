@@ -9,6 +9,7 @@
   },
   "scripts": {
     "build": "tsc --noEmit",
+    "release:notes": "node scripts/extract-release-notes.mjs",
     "release:check": "node scripts/check-release-version.mjs",
     "version:set": "node scripts/set-version.mjs",
     "typecheck": "tsc --noEmit",
