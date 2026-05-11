@@ -9,6 +9,8 @@
   },
   "scripts": {
     "build": "tsc --noEmit",
+    "release:check": "node scripts/check-release-version.mjs",
+    "version:set": "node scripts/set-version.mjs",
     "typecheck": "tsc --noEmit",
     "healthcheck": "tsx scripts/tandem-api-healthcheck.ts",
     "create-draft": "tsx scripts/tandem-create-workflow-draft.ts",

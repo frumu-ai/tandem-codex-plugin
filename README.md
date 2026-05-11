@@ -358,6 +358,27 @@ Two paths are required by the **Codex plugin specification**
 The plugin payload lives at the repo root: `skills/`, `commands/`, `shared/`,
 `scripts/`, `.mcp.json`, and `assets/`.
 
+## 14. Release flow
+
+Codex reads the plugin version from `.codex-plugin/plugin.json` and caches
+installs under `~/.codex/plugins/cache/<marketplace>/<plugin>/<version>/`.
+Keep `package.json` and `.codex-plugin/plugin.json` on the same semver.
+
+For a release:
+
+```bash
+npm run version:set -- 0.1.1
+npm run release:check -- v0.1.1
+git add package.json package-lock.json .codex-plugin/plugin.json
+git commit -m "Release v0.1.1"
+git tag v0.1.1
+git push origin main --tags
+```
+
+The `Release` GitHub Action runs on `v*.*.*` tags, checks that the tag
+matches the plugin version, runs `npm run build`, and creates a GitHub
+release with generated notes.
+
 ---
 
 ## Layout at a glance
