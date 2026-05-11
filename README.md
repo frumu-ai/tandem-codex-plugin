@@ -16,7 +16,7 @@
     <a href="https://docs.tandem.ac/"><img src="https://img.shields.io/badge/docs-tandem.ac-2563EB?logo=readthedocs&logoColor=white&style=for-the-badge" alt="Docs"></a>
     <a href="https://github.com/frumu-ai/tandem"><img src="https://img.shields.io/badge/github-frumu--ai%2Ftandem-181717?logo=github&style=for-the-badge" alt="Tandem GitHub"></a>
     <a href="https://github.com/frumu-ai/tandem-codex-plugin"><img src="https://img.shields.io/badge/plugin-repo-181717?logo=github&style=for-the-badge" alt="Plugin Repository"></a>
-    <a href="https://github.com/frumu-ai/tandem-codex-plugin/actions/workflows/ci.yml"><img src="https://github.com/frumu-ai/tandem-codex-plugin/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI"></a>
+    <a href="https://github.com/frumu-ai/tandem-codex-plugin/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/frumu-ai/tandem-codex-plugin/ci.yml?branch=main&label=CI&logo=github&style=for-the-badge" alt="CI"></a>
     <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge" alt="License: MIT"></a>
   </p>
 </div>
@@ -379,6 +379,8 @@ The `Release` GitHub Action runs on `v*.*.*` tags, checks that the tag
 matches the plugin version, runs `npm run build`, compiles release notes
 from `docs/WHATS_NEW_vX.Y.Z.md`, `RELEASE_NOTES.md`, or `CHANGELOG.md`
 (in that order), and creates a GitHub Release from the compiled notes.
+
+Full checklist: [`docs/RELEASE_PROCESS.md`](./docs/RELEASE_PROCESS.md).
 
 ---
 
