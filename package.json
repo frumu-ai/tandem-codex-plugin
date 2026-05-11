@@ -1,6 +1,6 @@
 {
   "name": "tandem-codex-plugin",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "Helper scripts that the Tandem Codex plugin uses to talk to the Tandem engine HTTP API.",
   "type": "module",

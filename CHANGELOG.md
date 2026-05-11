@@ -5,6 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.1] - 2026-05-11
+
+### Added
+
+- GitHub Actions build check for TypeScript helper scripts.
+- Release workflow that validates plugin/package versions, compiles
+  release notes from `docs/WHATS_NEW_*`, `RELEASE_NOTES.md`, or
+  `CHANGELOG.md`, and creates GitHub Releases from tags.
+- AI plugin scanner workflow and release gate using
+  `hashgraph-online/ai-plugin-scanner-action`.
+- Dedicated release-process checklist in `docs/RELEASE_PROCESS.md`.
+
+### Changed
+
+- README header now uses public, matching Shields badges for CI and the
+  plugin scanner.
+- Provider setup docs now point to `tandem-engine` provider commands,
+  engine config, and provider-specific env vars instead of Tandem TUI or
+  control-panel provider setup.
+- Plugin starter prompts now use natural-language prompts instead of
+  slash-command defaults for broader Codex compatibility.
+- Release/license metadata now consistently uses Frumu LTD.
+
 ## [0.1.0] - 2026-05-11
 
 ### Added
