@@ -295,7 +295,10 @@ plugin pauses at every step that touches your live Tandem so you can
 inspect before committing. Bundles live under `.tandem-codex/`, which
 is git-ignored.
 
-Worked example: [`examples/reddit-research-to-notion.md`](./examples/reddit-research-to-notion.md).
+Worked examples:
+[`examples/README.md`](./examples/README.md),
+[`examples/reddit-research-to-notion.md`](./examples/reddit-research-to-notion.md) and
+[`examples/market-research-pain-points-to-notion-row.md`](./examples/market-research-pain-points-to-notion-row.md).
 
 ## 10. Build a complex manual workflow
 
@@ -328,6 +331,25 @@ Codex can look up current Tandem API and workflow documentation while helping
 you plan. Configure workflow execution MCP servers in your Tandem engine
 (control panel or `POST /mcp`), not in this plugin. Each example workflow
 documents which runtime MCP servers it expects.
+
+Additional MCP examples:
+
+- [`examples/support-ticket-triage-zendesk-slack.md`](./examples/support-ticket-triage-zendesk-slack.md)
+  shows support-ticket triage with approved Zendesk notes and Slack
+  escalation.
+- [`examples/meeting-prep-calendar-crm-brief.md`](./examples/meeting-prep-calendar-crm-brief.md)
+  shows daily meeting prep from calendar, CRM, and email.
+- [`examples/invoice-intake-approval-accounting.md`](./examples/invoice-intake-approval-accounting.md)
+  shows invoice extraction and approved accounting bill drafts.
+- [`examples/churn-risk-monitor-crm-slack.md`](./examples/churn-risk-monitor-crm-slack.md)
+  shows customer-success risk monitoring and approved escalations.
+- [`examples/security-advisory-triage-github-linear.md`](./examples/security-advisory-triage-github-linear.md)
+  shows dependency advisory triage and approved remediation issues.
+- [`examples/prospect-email-drafts-gmail-approval.md`](./examples/prospect-email-drafts-gmail-approval.md)
+  shows prospect research, Gmail draft creation, and final send approval.
+- [`examples/market-research-pain-points-to-notion-row.md`](./examples/market-research-pain-points-to-notion-row.md)
+  shows web research plus Reddit pain-point mining saved to a Notion
+  database row.
 
 ## 12. What this plugin does NOT do
 
@@ -406,7 +428,8 @@ shared/tandem-api-discovery-notes.md
 shared/tandem-output-contracts.md
 shared/tandem-approval-gates.md
 shared/tandem-auth.md
-examples/{reddit-research-to-notion,github-bug-monitor,manual-complex-workflow,repo-task-runner}.md
+examples/README.md
+examples/{reddit-research-to-notion,market-research-pain-points-to-notion-row,prospect-email-drafts-gmail-approval,support-ticket-triage-zendesk-slack,meeting-prep-calendar-crm-brief,invoice-intake-approval-accounting,churn-risk-monitor-crm-slack,security-advisory-triage-github-linear,github-bug-monitor,manual-complex-workflow,repo-task-runner}.md
 ```
 
 ## References
