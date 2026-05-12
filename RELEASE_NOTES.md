@@ -2,6 +2,31 @@
 
 This is the canonical release-notes file used by release tooling.
 
+## v0.1.2
+
+This patch release expands the Tandem Codex Plugin's worked examples so
+teams can start from realistic, MCP-driven automation patterns instead
+of a blank workflow.
+
+What's changed:
+
+- Added `examples/README.md` as a catalog of reusable Tandem automation
+  examples.
+- Added support-ticket triage with Zendesk reads, approved internal
+  notes, and Slack escalation.
+- Added daily meeting prep briefs from calendar, CRM, and email context.
+- Added invoice intake that extracts finance inbox attachments and
+  creates accounting bill drafts only after approval.
+- Added churn-risk monitoring across CRM, support, billing, analytics,
+  and approved Slack/CRM follow-up.
+- Added security advisory triage that matches advisories to dependencies
+  and creates approved GitHub or Linear remediation issues.
+- Added market research and Reddit pain-point analysis saved to an
+  approved Notion database row.
+- Added prospect research and Gmail outreach drafts with separate
+  approval gates for draft creation and sending.
+- Updated the README to point readers at the expanded example set.
+
 ## v0.1.1
 
 This patch release prepares the Tandem Codex Plugin for tagged public

@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.2] - 2026-05-12
+
+### Added
+
+- Expanded the examples library with a new catalog at
+  `examples/README.md`.
+- Added MCP-driven automation examples for common Tandem use cases:
+  support ticket triage, meeting prep briefs, invoice intake, churn-risk
+  monitoring, security advisory triage, market research to Notion, and
+  prospect email drafting with Gmail approval gates.
+- Added examples that demonstrate recurring triage gates, narrow
+  per-agent `mcp_policy` allowlists, durable workspace artifacts, and
+  explicit approval before external writes.
+
+### Changed
+
+- README now links the expanded examples catalog and highlights the new
+  MCP workflow patterns.
+
 ## [0.1.1] - 2026-05-11
 
 ### Added
