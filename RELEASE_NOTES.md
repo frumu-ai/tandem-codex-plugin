@@ -2,6 +2,26 @@
 
 This is the canonical release-notes file used by release tooling.
 
+## v0.1.3
+
+This patch release tightens Tandem workflow guidance for external MCP
+side-effects, especially approval-driven flows where a human decision
+should permit a later action but not perform that action itself.
+
+What's changed:
+
+- Updated the Tandem workflow planning skill to treat approval gates as
+  decision-only nodes followed by concrete execution nodes.
+- Added guidance to mirror exact MCP tool ids in `tool_policy.allowlist`
+  and `mcp_policy.allowed_tools`, avoiding broad server grants for
+  safety-critical stages.
+- Expanded shared approval and workflow design rules with the
+  prepare/draft -> approval -> execution pattern.
+- Updated the Gmail prospect outreach example so draft creation, send
+  approval, and sending use separate agents with narrow tool access.
+- Added durable output paths for Gmail draft and send stages so external
+  side-effect receipts survive for downstream workflow steps.
+
 ## v0.1.2
 
 This patch release expands the Tandem Codex Plugin's worked examples so

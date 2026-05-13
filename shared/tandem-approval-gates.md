@@ -19,6 +19,33 @@ The verified Tandem primitives we use:
 
 ---
 
+## Approval gates are not action nodes
+
+An approval gate records a human decision. It should not be the last node
+that is expected to perform the external side-effect.
+
+Use this shape whenever approval should permit a later action:
+
+1. **Prepare/draft node** creates the candidate artifact and records its
+   id, URL, recipient/target, and preview.
+2. **Approval node** presents that artifact and collects one of the
+   explicit decisions, such as `approve`, `rework`, or `cancel`.
+3. **Execution node** depends on the approval node, reads the artifact id
+   from the prepare/draft node, calls the concrete external tool, and
+   returns the external tool receipt.
+
+Do not give the approval node the send/publish/delete tool. Put that tool
+only on the downstream execution node. Rework decisions should target the
+upstream prepare/draft nodes, not the execution node.
+
+For MCP side-effects, exact tool ids must appear in
+`tool_policy.allowlist[]` and `mcp_policy.allowed_tools[]`. Avoid
+server-level grants or wildcards for Gmail, Slack, Notion, GitHub, paid
+APIs, or destructive tools unless the user explicitly approves that broad
+surface.
+
+---
+
 ## The nine categories and what to set
 
 ### 1. Destructive operations
@@ -42,9 +69,13 @@ Discord message, Stripe charge.
 **Set:**
 - `external_integrations_allowed: true` (necessary for the engine to
   even consider running the tool).
-- The MCP write tool listed in `mcp_policy.allowed_tools` for **only**
-  the agent that needs it.
+- The concrete MCP write tool listed in both `tool_policy.allowlist` and
+  `mcp_policy.allowed_tools` for **only** the agent that needs it.
+- Keep `mcp_policy.allowed_servers` empty when the concrete tool id is
+  known; use server-level grants only when broad access is intentional.
 - That agent's `approval_policy` unset (gated by default).
+- If approval should trigger a later action, split the approval gate and
+  the execution node.
 
 ### 3. Public publication
 
@@ -91,7 +122,8 @@ Tandem flags two specifically:
 A tool the agent has never used in a previous run of this workflow.
 
 **Set:**
-- Add the tool to `mcp_policy.allowed_tools` *before* the run.
+- Add the tool to `tool_policy.allowlist` and
+  `mcp_policy.allowed_tools` *before* the run.
 - Pause-create the automation so the user inspects the new tool list.
 - Once the run succeeds, treat that tool as known for the workflow.
 

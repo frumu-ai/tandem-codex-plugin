@@ -58,16 +58,56 @@ approval.
       "approval_policy": "auto"
     },
     {
-      "agent_id": "gmail-operator",
-      "display_name": "Gmail Operator",
+      "agent_id": "gmail-draft-operator",
+      "display_name": "Gmail Draft Operator",
       "model_policy": {
         "default_model": { "provider_id": "openrouter", "model_id": "openai/gpt-4o-mini" }
       },
-      "tool_policy": { "allowlist": ["read", "write"] },
+      "tool_policy": {
+        "allowlist": [
+          "read",
+          "mcp_list",
+          "mcp.gmail.drafts_create",
+          "mcp.gmail.drafts_get"
+        ],
+        "denylist": ["mcp.gmail.drafts_send", "mcp.gmail.send_email"]
+      },
       "mcp_policy": {
-        "allowed_servers": ["gmail"],
+        "allowed_servers": [],
         "allowed_tools": [
           "mcp.gmail.drafts_create",
+          "mcp.gmail.drafts_get"
+        ]
+      }
+    },
+    {
+      "agent_id": "send-reviewer",
+      "display_name": "Send Approval Reviewer",
+      "model_policy": {
+        "default_model": { "provider_id": "openrouter", "model_id": "openai/gpt-4o-mini" }
+      },
+      "tool_policy": { "allowlist": ["read"] },
+      "mcp_policy": { "allowed_servers": [], "allowed_tools": [] }
+    },
+    {
+      "agent_id": "gmail-sender",
+      "display_name": "Gmail Sender",
+      "model_policy": {
+        "default_model": { "provider_id": "openrouter", "model_id": "openai/gpt-4o-mini" }
+      },
+      "tool_policy": {
+        "allowlist": [
+          "read",
+          "mcp_list",
+          "mcp.gmail.drafts_get",
+          "mcp.gmail.drafts_send"
+        ],
+        "denylist": ["mcp.gmail.send_email", "mcp.gmail.drafts_create"]
+      },
+      "mcp_policy": {
+        "allowed_servers": [],
+        "allowed_tools": [
+          "mcp.gmail.drafts_get",
           "mcp.gmail.drafts_send"
         ]
       }
@@ -100,19 +140,37 @@ approval.
       },
       {
         "node_id": "create-gmail-drafts",
-        "agent_id": "gmail-operator",
+        "agent_id": "gmail-draft-operator",
         "depends_on": ["draft-emails"],
         "objective": "Create Gmail drafts for reviewer-approved outreach candidates.",
-        "prompt": "ROLE: Gmail draft operator.\n\nINPUTS:\n- upstream:structured_json.payload.drafts[]\n\nTASK:\n1. For each approved draft candidate, call mcp.gmail.drafts_create with To, Subject, and Body.\n2. Skip drafts the reviewer rejects.\n3. Record the Gmail draft id for each created draft.\n\nCONSTRAINTS:\n- This stage requires human approval before any mcp.gmail.drafts_create call.\n- Creating a Gmail draft is an external write; do not auto-approve it.\n- Do not send mail in this stage.\n\nREQUIRED OUTPUT (output_contract: structured_json):\n- payload: { \"gmail_drafts\": [ { \"prospect_email\", \"draft_id\", \"subject\" } ] }\n- schema_version: \"1\"\n- success_criteria:\n    - every draft_id is non-empty\n    - gmail_drafts.length <= upstream drafts.length",
+        "prompt": "ROLE: Gmail draft operator.\n\nINPUTS:\n- upstream:structured_json.payload.drafts[]\n\nTASK:\n1. For each draft candidate, call mcp.gmail.drafts_create with To, Subject, and Body.\n2. Record the Gmail draft id, message id, thread id, recipient, subject, and draft URL when available.\n3. Write the draft receipts to the node output path.\n\nCONSTRAINTS:\n- Creating a Gmail draft is an external write; if the user requires approval before draft creation, add a separate approval gate before this node.\n- Do not send mail in this stage.\n- This agent must not have any send tool available.\n\nREQUIRED OUTPUT (output_contract: structured_json):\n- payload: { \"gmail_drafts\": [ { \"prospect_email\", \"draft_id\", \"message_id\", \"thread_id\", \"subject\", \"draft_url\", \"body_preview\" } ] }\n- schema_version: \"1\"\n- success_criteria:\n    - every draft_id is non-empty\n    - gmail_drafts.length <= upstream drafts.length\n    - no send tool was called",
+        "metadata": {
+          "builder": {
+            "output_path": ".tandem/artifacts/prospect-email-drafts-gmail-approval/create-gmail-drafts.json"
+          }
+        },
         "output_contract": "structured_json"
       },
       {
-        "node_id": "send-approved-emails",
-        "agent_id": "gmail-operator",
+        "node_id": "approve-send-drafts",
+        "agent_id": "send-reviewer",
         "depends_on": ["create-gmail-drafts"],
-        "objective": "Send only the Gmail drafts that receive final approval.",
-        "prompt": "ROLE: Gmail sender.\n\nINPUTS:\n- upstream:structured_json.payload.gmail_drafts[]\n\nTASK:\n1. Present the Gmail draft ids and recipients for final approval.\n2. For each approved draft, call mcp.gmail.drafts_send.\n3. Skip any draft not explicitly approved.\n\nCONSTRAINTS:\n- This stage requires final human approval before any send action.\n- Never send to a suppressed, unsubscribed, or rejected recipient.\n- Stop on the first Gmail API error and report the failed draft id.\n\nREQUIRED OUTPUT (output_contract: artifact):\n- artifact_kind: \"mcp_call_result\"\n- location: list of sent Gmail message ids\n- artifact_summary: \"Sent N approved outreach emails\"\n- success_criteria:\n    - location contains only message ids returned by Gmail\n    - N is less than or equal to approved draft count",
-        "output_contract": "artifact"
+        "objective": "Collect human approval before any Gmail draft is sent.",
+        "prompt": "ROLE: Send approval gate.\n\nINPUTS:\n- upstream:structured_json.payload.gmail_drafts[]\n\nTASK:\n1. Present each Gmail draft with recipient, subject, body preview, draft id, and draft URL if available.\n2. Ask for one of: approve, rework, cancel.\n3. If rework is selected, route back to draft-emails and create-gmail-drafts.\n\nCONSTRAINTS:\n- This is an approval-only node.\n- Do not call any Gmail MCP tool.\n- Do not mark the workflow complete after approval; a downstream execution node must send the draft.\n\nREQUIRED OUTPUT (output_contract: review_decision):\n- decision: \"approve\" | \"rework\" | \"cancel\"\n- approved_draft_ids: string[]\n- rework_targets: [\"draft-emails\", \"create-gmail-drafts\"] when decision is \"rework\"\n- reviewer_notes: string\n- success_criteria:\n    - approval text includes recipient, subject, preview, and draft_id\n    - approved_draft_ids are a subset of upstream gmail_drafts[].draft_id",
+        "output_contract": "review_decision"
+      },
+      {
+        "node_id": "send-approved-emails",
+        "agent_id": "gmail-sender",
+        "depends_on": ["approve-send-drafts"],
+        "objective": "Send only the Gmail drafts that received final approval.",
+        "prompt": "ROLE: Gmail sender.\n\nINPUTS:\n- drafts: create-gmail-drafts.structured_json.payload.gmail_drafts[]\n- approval: approve-send-drafts.review_decision\n\nTASK:\n1. If approval.decision is not \"approve\", stop without calling Gmail.\n2. Read each approved draft id from approval.approved_draft_ids and match it to the create-gmail-drafts output.\n3. Call mcp.gmail.drafts_send once per approved draft id.\n4. Return the concrete send receipts.\n\nCONSTRAINTS:\n- This is the only node with the Gmail send-draft tool.\n- Do not create or update drafts in this stage.\n- Do not call any direct send-email tool.\n- Stop on the first Gmail API error and report the failed draft id.\n\nREQUIRED OUTPUT (output_contract: structured_json):\n- payload: { \"status\": \"completed\", \"sent\": true, \"sent_messages\": [ { \"draft_id\", \"message_id\", \"recipient\", \"subject\", \"tool_used\", \"send_result\" } ] }\n- schema_version: \"1\"\n- success_criteria:\n    - every sent message has tool_used equal to mcp.gmail.drafts_send\n    - every draft_id came from create-gmail-drafts output\n    - sent is true only if the send-draft tool returned success",
+        "metadata": {
+          "builder": {
+            "output_path": ".tandem/artifacts/prospect-email-drafts-gmail-approval/send-approved-emails.json"
+          }
+        },
+        "output_contract": "structured_json"
       }
     ]
   }
@@ -139,17 +197,25 @@ await client.automationsV2.runNow({
 
 - `find-prospects`, `analyze-positioning`, and `draft-emails` are
   read/workspace-only and can run automatically.
-- `create-gmail-drafts` is gated because Gmail draft creation writes to
-  an external account.
-- `send-approved-emails` is a second, final approval gate. Approval to
-  create a draft is not approval to send it.
+- `create-gmail-drafts` writes to Gmail and has only draft/read tools.
+  If your policy requires approval before draft creation, add an
+  approval-only node before it.
+- `approve-send-drafts` is the final human approval gate. It has no Gmail
+  tools and cannot send.
+- `send-approved-emails` is the post-approval execution node. Approval to
+  send is not the send itself; this node must call the send-draft tool
+  and return a receipt.
 
 ## Why this shape
 
 - Prospecting, strategy, drafting, and sending are separate stages so
   each stage has a small tool surface.
-- Gmail tools are isolated to one agent and split into two nodes so draft
-  creation and sending have distinct approvals.
+- Gmail draft and send tools are isolated to different agents so the
+  draft stage cannot accidentally send mail.
+- The approval gate is separate from the execution node so approving a
+  draft resumes the workflow and then calls the concrete send-draft tool.
+- Side-effect nodes write durable receipts under `.tandem/artifacts/...`
+  so a successful Gmail call is not lost behind a later generic write.
 - The prompts include basic outreach safety constraints: public business
   contact sources, no personal email scraping, opt-out language, and no
   unsupported claims.

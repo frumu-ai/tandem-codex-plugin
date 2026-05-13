@@ -64,6 +64,9 @@ Default to **gated** for any external write. See
   the source — see `tandem-api-discovery-notes.md`).
 - Add a comment in the per-stage prompt that names the approver so the
   reviewer knows what they're signing off on.
+- Treat approval nodes as decision-only. If approval should cause an
+  external action, add a separate downstream execution node that reads
+  the approved artifact and calls the concrete tool.
 
 ## 6. MCP requirements
 
@@ -73,9 +76,53 @@ Default to **gated** for any external write. See
   precisely. Do not leave them empty just because Tandem can discover
   them — explicit allowlists are the whole point of Tandem's "strict
   tool isolation" model.
+- Also put concrete MCP tool ids in `tool_policy.allowlist[]`. For
+  execution, this is the policy surface the runtime uses to decide which
+  concrete tools to offer to a node.
+- Avoid `allowed_servers[]` and wildcard grants (`mcp.<server>.*`) for
+  safety-critical side-effect stages. Prefer:
+  ```json
+  {
+    "tool_policy": {
+      "allowlist": ["read", "mcp_list", "mcp.<gmail-server>.gmail_create_email_draft"]
+    },
+    "mcp_policy": {
+      "allowed_servers": [],
+      "allowed_tools": ["mcp.<gmail-server>.gmail_create_email_draft"]
+    }
+  }
+  ```
 - If a needed MCP server isn't connected (`client.mcp.list` doesn't
   show it), pause and ask the user to connect it. Do not fabricate a
   tool name.
+
+## 6a. External MCP side-effect pattern
+
+When a workflow both prepares and executes an external action, separate
+tool access by stage:
+
+- Draft/create node: only draft/create/read tools. No send/publish tool.
+- Approval node: no external write tools. It presents recipient, target,
+  content preview, artifact id, and the approve/rework/cancel choices.
+- Execution node: only the final concrete action tool and read tools
+  needed to fetch the approved artifact.
+
+Declare a durable output target for every side-effect node, for example:
+
+```json
+{
+  "metadata": {
+    "builder": {
+      "output_path": ".tandem/artifacts/<workflow>/<node>.json"
+    }
+  }
+}
+```
+
+The final output should include `status`, the external id or URL returned
+by the tool, `tool_used`, and evidence that the concrete tool executed.
+Creating or updating a draft is not evidence that a later send/publish
+step executed.
 
 ## 7. Scope
 

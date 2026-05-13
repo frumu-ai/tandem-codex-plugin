@@ -56,7 +56,20 @@ that Tandem's engine will execute.
    - first-time use of a new MCP tool
    - any tool not on the agent's current allowlist
    - schedule changes that broaden scope
-7. **Source of truth is the Tandem engine.** Prefer the verified
+7. **Approval gates are decision points, not execution steps.** For any
+   external side-effect that happens after approval, model the graph as:
+   prepare/draft -> approval gate -> concrete execution node. The
+   approval node must not be the final action, and the workflow must not
+   complete until the post-approval execution node returns a receipt.
+8. **Use exact MCP tool allowlists for side-effect workflows.** Do not rely
+   on `mcp_policy.allowed_servers`, wildcard server grants, or
+   `mcp.<server>.*` for safety-critical stages unless broad access is
+   the explicit design. Put concrete MCP tool ids in
+   `tool_policy.allowlist[]`, mirror them in `mcp_policy.allowed_tools[]`,
+   keep `mcp_policy.allowed_servers[]` empty when possible, and inspect
+   the returned automation snapshot. If the engine broadens or drops the
+   tool policy, stop and repair/recreate before running.
+9. **Source of truth is the Tandem engine.** Prefer the verified
    entry points over local guessing:
    - `client.workflowPlans.preview({ prompt, planSource, workspaceRoot? })`
      for one-shot prompt validation.
@@ -172,6 +185,13 @@ For each agent in the workflow, fill these fields explicitly:
   local-only drafts.
 - `tool_policy.allowlist[]` and `denylist[]`
 - `mcp_policy.allowed_servers[]` and `allowed_tools[]`
+  - For MCP tools, include the exact `mcp.<server>.<tool>` ids in
+    `tool_policy.allowlist[]` too; current execution-time offering is
+    governed by tool policy first, while `mcp_policy` documents and
+    constrains the MCP side.
+  - For side-effect MCP stages, prefer `mcp_policy.allowed_servers: []`
+    plus exact `allowed_tools[]`. Do not use a server-level grant when a
+    specific tool id is known.
 - `approval_policy` (use `"auto"` only when the agent does **no** external
   side-effects; otherwise leave the field unset and let the engine require
   approval — see `shared/tandem-approval-gates.md`)
@@ -186,6 +206,10 @@ For each node in the DAG:
   `shared/tandem-output-contracts.md`)
 - `output_contract` (what the stage must emit; one of the five patterns)
 - `depends_on[]`
+- `metadata.builder.output_path` when the node has an external
+  side-effect or a downstream node must read a durable receipt/artifact.
+  This prevents a successful tool call from being followed by a blocked
+  generic write.
 
 For the automation:
 
@@ -245,6 +269,21 @@ Pick the call that matches the route:
 
 Show the engine's response verbatim. If validation fails, fix and re-run.
 **Do not** smooth over engine errors.
+
+For V2 DAGs with MCP side-effects, inspect the returned automation
+snapshot before activation or run:
+
+- Every side-effect node's agent exposes only the intended concrete MCP
+  tools in `tool_policy.allowlist[]`.
+- `mcp_policy.allowed_servers[]` is empty or intentionally broad.
+- Draft/create nodes do not have send tools.
+- Approval gates are followed by a separate execution node.
+- Execution nodes declare an output path or otherwise return a durable
+  receipt.
+
+If a previously created automation offered broader tools, skipped a
+post-approval execution node, or mixed draft and send tools in one agent,
+recreate it paused instead of patching around stale run state.
 
 ### Step 7 — Apply only with explicit approval
 
