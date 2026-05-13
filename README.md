@@ -272,14 +272,10 @@ without a clear "yes, import":
 /import-preview-workflow .tandem-codex/plan-bundles/<plan_id>.json
 ```
 
-End-to-end CLI equivalent:
-
-```bash
-npm run create-draft -- "Daily Reddit research to Notion"
-npm run revise      -- <plan_id> "Add approval before Notion write"
-npm run apply       -- <plan_id>
-npm run import-plan -- .tandem-codex/plan-bundles/<plan_id>.json
-```
+There is no separate user-facing npm workflow CLI for this plugin. Use
+the Codex slash commands above when working from Codex. Use
+`tandem-engine` or the Tandem control panel for Tandem runtime
+operations outside Codex.
 
 For one-shot prompt validation (no chat session) or to preview an
 existing bundle without applying:
