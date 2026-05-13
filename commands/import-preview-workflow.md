@@ -27,8 +27,10 @@ unless the user specified `--out` to apply.
    `client.workflowPlans.importPlan({ bundle: previewed.bundle ?? bundle })`
    and prints the engine's import response.
 
-The helper is `scripts/tandem-import-plan.ts`
-(`npm run import-plan -- ./path/to/bundle.json`).
+The helper is `scripts/tandem-import-plan.ts`. Run
+`npm run import-plan -- ./path/to/bundle.json` for preview only. After
+explicit same-turn approval, run
+`npm run import-plan -- ./path/to/bundle.json --import` to commit.
 
 ## Behaviour rules
 

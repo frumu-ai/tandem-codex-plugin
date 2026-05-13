@@ -1,14 +1,16 @@
 #!/usr/bin/env tsx
 /**
- * Import a Tandem workflow-plan bundle. Always runs `importPreview`
- * first; refuses to call `importPlan` unless the engine reports
- * `import_validation.compatible: true`.
+ * Preview a Tandem workflow-plan bundle import. Always runs
+ * `importPreview` first; only calls `importPlan` when passed
+ * `--import` and the engine reports `import_validation.compatible:
+ * true`.
  *
  * This is the explicit-user-approval step. The plugin's skill should
  * not run this without a clear "yes, import" from the user.
  *
  * Usage:
  *   npm run import-plan -- ./path/to/bundle.json
+ *   npm run import-plan -- ./path/to/bundle.json --import
  */
 
 import "dotenv/config";
@@ -17,9 +19,11 @@ import { resolve } from "node:path";
 import { createClient } from "./lib/tandem-config.ts";
 
 async function main() {
-  const arg = process.argv[2]?.trim();
+  const args = process.argv.slice(2);
+  const importApproved = args.includes("--import");
+  const arg = args.find((value) => value !== "--import")?.trim();
   if (!arg) {
-    console.error("Usage: npm run import-plan -- ./path/to/bundle.json");
+    console.error("Usage: npm run import-plan -- ./path/to/bundle.json [--import]");
     process.exit(64);
   }
 
@@ -43,6 +47,13 @@ async function main() {
         "[tandem-codex-plugin] importPreview reports incompatible — refusing to import.",
       );
       process.exit(1);
+    }
+
+    if (!importApproved) {
+      console.error(
+        "[tandem-codex-plugin] preview compatible. Re-run with --import only after explicit user approval.",
+      );
+      process.exit(0);
     }
 
     const finalBundle = (previewed as { bundle?: unknown }).bundle ?? bundle;
