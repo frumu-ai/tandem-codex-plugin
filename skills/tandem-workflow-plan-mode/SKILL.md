@@ -313,9 +313,8 @@ Never use `client.workflowPlans.preview({ planId })` — that signature
 does not exist. `preview` is prompt-based one-shot only.
 
 For **V2 automations**, flip `status: "paused" → "active"` via the
-Tandem control panel (or an automations PATCH endpoint if the engine
-exposes one — *not yet verified in `@frumu/tandem-client`'s public
-surface*).
+Tandem control panel. Use an automations PATCH endpoint only when the
+installed Tandem SDK or API docs expose a supported activation method.
 
 Then stop. Do **not** call `runNow` unless the user asked for that
 specifically.
