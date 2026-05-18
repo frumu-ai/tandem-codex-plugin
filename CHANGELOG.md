@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.4] - 2026-05-18
+
+### Fixed
+
+- Corrected V2 automation guidance to place node instructions under
+  `metadata.builder.prompt` instead of a top-level `flow.nodes[].prompt`
+  field.
+- Clarified that `external_integrations_allowed` is verified for legacy
+  routines, but should not be added to V2 create payloads unless the
+  installed engine explicitly accepts it.
+- Updated approval-gate documentation to describe current V2 governance
+  through exact tool/MCP allowlists, node approval gates, and
+  `handoff_config.auto_approve: false`.
+
 ## [0.1.3] - 2026-05-13
 
 ### Changed

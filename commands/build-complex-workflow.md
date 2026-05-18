@@ -53,8 +53,18 @@ plan-mode loop for the **Manual / complex DAG** route.
 - `creator_id: "codex-plugin"`
 - `metadata.triage_gate: true` for Smart Heartbeat skip on empty cycles
 - `handoff_config.auto_approve: false` (default)
-- `external_integrations_allowed`: only `true` if necessary, paired with
-  approval gates
+- Do not include `external_integrations_allowed` in V2 payloads unless
+  the installed engine's `AutomationV2CreateInput` source or validation
+  explicitly accepts it. It is verified for legacy routines, while current
+  V2 payloads express external-write governance through exact agent
+  tool/MCP policies, approval gates, and
+  `handoff_config.auto_approve: false`.
+
+## Node instructions
+
+Put the full stage prompt under `metadata.builder.prompt`. Current V2
+engine structs do not expose a top-level `prompt` field on `flow.nodes[]`;
+top-level unknown fields may be ignored by the server.
 
 ## Behaviour rules
 

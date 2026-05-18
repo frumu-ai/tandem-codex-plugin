@@ -202,8 +202,10 @@ For each node in the DAG:
 - `node_id` (kebab-case)
 - `agent_id`
 - `objective` (one short sentence)
-- `prompt` (full per-stage prompt — use the structure in
-  `shared/tandem-output-contracts.md`)
+- `metadata.builder.prompt` (full per-stage prompt — use the structure in
+  `shared/tandem-output-contracts.md`). Current V2 engine structs do not
+  expose a top-level `prompt` field on `flow.nodes[]`; node instructions
+  are rendered from builder metadata.
 - `output_contract` (what the stage must emit; one of the five patterns)
 - `depends_on[]`
 - `metadata.builder.output_path` when the node has an external
@@ -220,8 +222,11 @@ For the automation:
 - `creator_id` (e.g. `"codex-plugin"`)
 - `metadata.triage_gate: true` when the workflow should skip empty cycles
 - `handoff_config.auto_approve: false` (default)
-- `external_integrations_allowed` (only `true` if necessary, paired with
-  approval gates)
+- Do not add `external_integrations_allowed` to V2 payloads unless the
+  installed engine's `AutomationV2CreateInput` source or validation
+  explicitly accepts it. It is verified for legacy routines, but current
+  V2 create input relies on exact tool/MCP policies, approval gates, and
+  `handoff_config.auto_approve: false`.
 
 ### Step 4 — Explain in plain language
 

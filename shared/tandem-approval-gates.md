@@ -10,7 +10,9 @@ The verified Tandem primitives we use:
 - `requires_approval` (legacy routine; per-routine boolean)
 - `handoff_config.auto_approve` (automation level; `false` keeps gates
   active across handoffs)
-- `external_integrations_allowed` (automation level)
+- `external_integrations_allowed` (legacy routine automation level; do
+  not add to V2 payloads unless the installed engine source or validation
+  explicitly accepts it)
 - Capability flags: `creates_agents`, `modifies_grants` (require
   approval at the engine when set)
 - `tool_policy.allowlist[]` and `mcp_policy.allowed_tools[]` (the agent
@@ -67,8 +69,12 @@ Examples: Slack post, email send, Notion page create, GitHub PR/issue,
 Discord message, Stripe charge.
 
 **Set:**
-- `external_integrations_allowed: true` (necessary for the engine to
-  even consider running the tool).
+- For legacy routines, `external_integrations_allowed: true` is necessary
+  for the engine to even consider running the tool.
+- For V2 automations on engines whose `AutomationV2CreateInput` does not
+  accept `external_integrations_allowed`, omit that field and rely on the
+  exact MCP/tool allowlists, node approval gates, and
+  `handoff_config.auto_approve: false`.
 - The concrete MCP write tool listed in both `tool_policy.allowlist` and
   `mcp_policy.allowed_tools` for **only** the agent that needs it.
 - Keep `mcp_policy.allowed_servers` empty when the concrete tool id is
@@ -179,7 +185,7 @@ Two agents:
 - `publish` writes externally; `approval_policy` is left unset so the
   engine's default approval gate fires before `mcp.notion.pages_create`
   runs.
-- Automation level: `external_integrations_allowed: true`,
-  `handoff_config.auto_approve: false`.
+- Automation level: `handoff_config.auto_approve: false`. For legacy
+  routines only, also set `external_integrations_allowed: true`.
 
 Result: the user is asked to approve the Notion write each cycle.

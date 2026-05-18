@@ -131,15 +131,22 @@ Automation-level fields verified:
 - `name`, `status: "active" | "paused"`
 - `schedule` (V2 shape — see below)
 - `agents[]`
-- `flow.nodes[]` with `node_id`, `agent_id`, `objective`, `prompt`,
-  `output_contract`, `depends_on[]`
+- `flow.nodes[]` with `node_id`, `agent_id`, `objective`,
+  `metadata.builder.prompt`, `output_contract`, `depends_on[]`
 - `workspace_root`
 - `creator_id`
 - `handoff_config.auto_approve: false`
 - `metadata.triage_gate: true`
-- `external_integrations_allowed: false | true`
 - `requires_approval` (legacy routine field)
 - Capability flags: `creates_agents`, `modifies_grants` (require approval)
+
+Source check, 2026-05-18: the local engine's
+`AutomationV2CreateInput` in `crates/tandem-server/src/http/routines_automations_parts/part01.rs`
+does **not** include `external_integrations_allowed`, and
+`AutomationFlowNode` in `crates/tandem-server/src/automation_v2/types.rs`
+does **not** include a top-level `prompt`. V2 node prompts are rendered
+from `metadata.builder.prompt`. `external_integrations_allowed` remains
+verified for legacy routines, not for V2 create payloads on this engine.
 
 V2 schedule shapes:
 
@@ -206,9 +213,9 @@ instead, the design defers to engine validation or asks the user.
 - **Status:** *Not* found in the public stable docs as a named enum.
 - **Plan:** the plugin substitutes the verified policy primitives —
   `approval_policy`, `requires_approval`, `tool_policy`, `mcp_policy`,
-  `scope_policy`, `handoff_config.auto_approve`,
-  `external_integrations_allowed`, capability flags — to express the
-  same gradient.
+  `scope_policy`, `handoff_config.auto_approve`, node approval gates,
+  and capability flags — to express the same gradient. For legacy
+  routines, `external_integrations_allowed` may also apply.
 - **Verify:** `crates/tandem-server/src/automation_v2/types.rs` and
   `crates/tandem-plan-compiler/src/api.rs` in `frumu-ai/tandem`. Look
   for `ExecutionProfile`, `RunMode`, `Strictness`, or similar.
