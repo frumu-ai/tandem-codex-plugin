@@ -192,6 +192,10 @@ For each agent in the workflow, fill these fields explicitly:
   - For side-effect MCP stages, prefer `mcp_policy.allowed_servers: []`
     plus exact `allowed_tools[]`. Do not use a server-level grant when a
     specific tool id is known.
+  - Treat agent policy as a baseline, not the whole boundary. If a run UI
+    or automation setup attaches MCP servers at workflow level, individual
+    tasks may inherit that broader surface unless each node also carries a
+    concrete node-level `tool_policy` and `mcp_policy`.
 - `approval_policy` (use `"auto"` only when the agent does **no** external
   side-effects; otherwise leave the field unset and let the engine require
   approval — see `shared/tandem-approval-gates.md`)
@@ -206,7 +210,24 @@ For each node in the DAG:
   `shared/tandem-output-contracts.md`). Current V2 engine structs do not
   expose a top-level `prompt` field on `flow.nodes[]`; node instructions
   are rendered from builder metadata.
+- `tool_policy` and `mcp_policy` for every MCP-using node, mirrored from
+  the exact tools that node is allowed to call. For nodes that must not
+  use MCP, set `mcp_policy.allowed_servers: []`,
+  `mcp_policy.allowed_tools: []`, and deny broad MCP patterns in
+  `tool_policy.denylist[]` when supported.
+- Preserve local artifact output capability. Most V2 nodes with an
+  `output_contract` get a default run-scoped output path and therefore
+  need local `write` in `tool_policy.allowlist[]` so they can save their
+  JSON/report artifact. Do not confuse this with external writes: deny
+  external MCP write tools separately, but do not remove local `write`
+  from normal output-producing nodes. If `write` is denied, the runtime
+  may fail before the model produces a final response because
+  `artifact_write` cannot be offered.
 - `output_contract` (what the stage must emit; one of the five patterns)
+  with `enforcement.validation_profile: "artifact_only"` and
+  `enforcement.required_tool_calls[]` for connector-only research nodes.
+  Tool inventory calls such as `mcp_list` are setup evidence only; they
+  must not be the only receipt for a research node.
 - `depends_on[]`
 - `metadata.builder.output_path` when the node has an external
   side-effect or a downstream node must read a durable receipt/artifact.
@@ -321,6 +342,18 @@ For **V2 automations**, flip `status: "paused" → "active"` via the
 Tandem control panel. Use an automations PATCH endpoint only when the
 installed Tandem SDK or API docs expose a supported activation method.
 
+Important runtime rule: V2 runs are snapshot-based. A run that already
+started keeps the automation snapshot it began with. If you patch an
+automation's tool policy, MCP policy, output contract, model, or prompt,
+tell the user to start a fresh run; do not expect an old blocked/paused
+run to inherit the corrected definition.
+
+When diagnosing an unclear blocked or paused run, inspect the engine run
+record and read `checkpoint.lifecycle_history`. The actionable blocker is
+often in `workflow_state_changed`, `node_repair_requested`, or
+`run_paused` event `reason` fields, even when top-level `detail` or the
+UI summary is vague.
+
 Then stop. Do **not** call `runNow` unless the user asked for that
 specifically.
 
@@ -339,6 +372,9 @@ INPUTS:
 
 TASK:
 - <ordered steps>
+- For MCP research: name the concrete `mcp.<server>.<tool>` calls that
+  must happen. If there is an empty-work path, state it explicitly and
+  make the output shape for that path unambiguous.
 
 CONSTRAINTS:
 - <tool/MCP scope, time budget, approval gates, no-go list>

@@ -18,6 +18,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated approval-gate documentation to describe current V2 governance
   through exact tool/MCP allowlists, node approval gates, and
   `handoff_config.auto_approve: false`.
+- Added explicit guidance that V2 workflows with globally attached MCP
+  servers must also set node-level `tool_policy` and `mcp_policy` so
+  individual tasks do not inherit broader connector access.
+- Clarified that output-producing V2 nodes still need local `write` for
+  run-scoped artifacts; external write tools should be denied separately.
+- Added connector-only research guidance for `artifact_only` validation
+  and `required_tool_calls[]`, so `mcp_list`/tool inventory receipts do
+  not satisfy research stages by themselves.
+- Added runtime debugging guidance that V2 runs are snapshot-based,
+  patched automation definitions only affect new runs, and unclear
+  blockers should be traced through `checkpoint.lifecycle_history`.
 
 ## [0.1.3] - 2026-05-13
 

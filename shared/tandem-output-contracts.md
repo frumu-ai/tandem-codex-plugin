@@ -137,6 +137,32 @@ Tandem's planner and verifier roles read the `INPUTS` and `REQUIRED
 OUTPUT` blocks. The closer the field names line up, the less the engine
 has to translate.
 
+## Connector-only enforcement
+
+When a node's evidence comes from MCP receipts rather than workspace
+files or public web pages, pair the structured output with engine-level
+enforcement. Use `validation_profile: "artifact_only"` so the validator
+does not require unrelated web/workspace inspection, and require the
+specific MCP calls that prove the node did the work:
+
+```json
+{
+  "kind": "structured_json",
+  "validator": "structured_json",
+  "enforcement": {
+    "validation_profile": "artifact_only",
+    "required_tool_calls": [
+      { "tool": "mcp.<server>.<read_or_search_tool>" }
+    ],
+    "repair_budget": 2
+  }
+}
+```
+
+Do not count `mcp_list`, `/mcp/tools`, or other inventory calls as
+research evidence. They are useful for setup diagnostics, but a node that
+only lists tools should not pass a research contract.
+
 ---
 
 ## Anti-patterns

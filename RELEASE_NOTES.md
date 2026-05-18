@@ -15,6 +15,18 @@ What's changed:
   explicitly validates it.
 - Approval-gate guidance now emphasizes exact tool/MCP allowlists, node
   gates, and `handoff_config.auto_approve: false` for V2 workflows.
+- V2 MCP safety guidance now requires node-level `tool_policy` and
+  `mcp_policy` when servers are attached at workflow/run level, so each
+  task only receives the exact tools it needs.
+- V2 node policy guidance now preserves local artifact `write` for
+  structured/report outputs while continuing to deny external MCP write
+  tools where they do not belong.
+- Connector-only research nodes now get guidance for
+  `artifact_only` validation and `required_tool_calls[]`, making
+  `mcp_list`/tool inventory receipts insufficient as research evidence.
+- Runtime guidance now calls out frozen V2 run snapshots and points
+  blocked-run debugging at `checkpoint.lifecycle_history` when the UI or
+  top-level run fields do not show the actionable reason.
 
 ## v0.1.3
 

@@ -38,6 +38,11 @@ here in one sentence.
   - A Tandem channel post (orchestrated `notifier` role).
 - Every node has an `output_contract`. See
   `tandem-output-contracts.md` for the five patterns.
+- Treat local artifact writes as a required runtime capability, not an
+  external side effect. V2 nodes with `output_contract` usually need the
+  local `write` tool to persist their run-scoped artifact. If `write` is
+  denied, the runtime can block before the model gets a final response
+  with a missing `artifact_write` capability.
 
 ## 4. Output contract
 
@@ -79,6 +84,30 @@ Default to **gated** for any external write. See
 - Also put concrete MCP tool ids in `tool_policy.allowlist[]`. For
   execution, this is the policy surface the runtime uses to decide which
   concrete tools to offer to a node.
+- For connector-only research nodes, add output enforcement that requires
+  at least one concrete connector call. Tool discovery (`mcp_list`,
+  `GET /mcp/tools`, or similar) proves availability only; it does not
+  prove the node performed the research. Prefer an `artifact_only`
+  validation profile plus `required_tool_calls[]` for the MCP calls that
+  must appear in receipts:
+  ```json
+  {
+    "output_contract": {
+      "kind": "structured_json",
+      "validator": "structured_json",
+      "enforcement": {
+        "validation_profile": "artifact_only",
+        "required_tool_calls": [
+          { "tool": "mcp.notion.notion_search" }
+        ]
+      }
+    }
+  }
+  ```
+- If a connector stage has an empty-work path, make that path explicit in
+  the prompt and require a harmless access/check call when available
+  (for example `mcp.<server>.account`) so the receipt cannot be
+  `mcp_list`-only.
 - Avoid `allowed_servers[]` and wildcard grants (`mcp.<server>.*`) for
   safety-critical side-effect stages. Prefer:
   ```json
@@ -95,6 +124,24 @@ Default to **gated** for any external write. See
 - If a needed MCP server isn't connected (`client.mcp.list` doesn't
   show it), pause and ask the user to connect it. Do not fabricate a
   tool name.
+
+## 6b. Runtime snapshots and debugging
+
+- V2 runs use a frozen automation snapshot from the moment the run
+  starts. Patching the automation definition fixes future runs, but it
+  does not repair an already-started run. If a run snapshot has the wrong
+  tool policy, MCP policy, model, or output contract, start a fresh run
+  after patching the automation.
+- When the UI says a run is running, blocked, or paused without a useful
+  explanation, inspect the run record from the engine and read
+  `checkpoint.lifecycle_history` as the source of truth. In particular,
+  look for `workflow_state_changed`, `node_repair_requested`, and
+  `run_paused` events; their `reason` fields often contain the missing
+  capability or validation blocker.
+- Do not trust only top-level `status`, `detail`, or `blockedNodeIDs`.
+  They are useful summaries, but the actionable reason may live only in
+  the lifecycle event history, especially after repair attempts or a
+  max-runtime guardrail pause.
 
 ## 6a. External MCP side-effect pattern
 

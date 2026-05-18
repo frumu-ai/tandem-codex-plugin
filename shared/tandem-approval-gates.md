@@ -15,8 +15,9 @@ The verified Tandem primitives we use:
   explicitly accepts it)
 - Capability flags: `creates_agents`, `modifies_grants` (require
   approval at the engine when set)
-- `tool_policy.allowlist[]` and `mcp_policy.allowed_tools[]` (the agent
-  literally cannot call a tool that isn't here)
+- Agent-level and node-level `tool_policy.allowlist[]` and
+  `mcp_policy.allowed_tools[]` (the task should not be offered a tool
+  that is not explicitly present in the node policy)
 - `scope_policy` (workspace and file-scope constraints)
 
 ---
@@ -41,10 +42,22 @@ only on the downstream execution node. Rework decisions should target the
 upstream prepare/draft nodes, not the execution node.
 
 For MCP side-effects, exact tool ids must appear in
-`tool_policy.allowlist[]` and `mcp_policy.allowed_tools[]`. Avoid
-server-level grants or wildcards for Gmail, Slack, Notion, GitHub, paid
-APIs, or destructive tools unless the user explicitly approves that broad
-surface.
+both the agent and node `tool_policy.allowlist[]` and
+`mcp_policy.allowed_tools[]`. Avoid server-level grants or wildcards for
+Gmail, Slack, Notion, GitHub, paid APIs, or destructive tools unless the
+user explicitly approves that broad surface.
+
+If the workflow/run has MCP servers attached globally, node-level policy
+is mandatory. Give each node only the exact MCP tools it needs, and give
+non-MCP nodes an empty `mcp_policy`. This prevents a read-only scoring or
+review task from inheriting write-capable tools attached for a later
+publisher node.
+
+Do not remove local artifact `write` from normal output-producing V2
+nodes. The engine may require `artifact_write` to persist a structured
+JSON/report result even when the node is otherwise read-only. Gate
+external side-effects by denying concrete MCP write tools, not by blocking
+the local artifact writer.
 
 ---
 
@@ -73,10 +86,11 @@ Discord message, Stripe charge.
   for the engine to even consider running the tool.
 - For V2 automations on engines whose `AutomationV2CreateInput` does not
   accept `external_integrations_allowed`, omit that field and rely on the
-  exact MCP/tool allowlists, node approval gates, and
+  exact agent/node MCP/tool allowlists, node approval gates, and
   `handoff_config.auto_approve: false`.
-- The concrete MCP write tool listed in both `tool_policy.allowlist` and
-  `mcp_policy.allowed_tools` for **only** the agent that needs it.
+- The concrete MCP write tool listed in both agent and node
+  `tool_policy.allowlist` and `mcp_policy.allowed_tools` for **only** the
+  node that needs it.
 - Keep `mcp_policy.allowed_servers` empty when the concrete tool id is
   known; use server-level grants only when broad access is intentional.
 - That agent's `approval_policy` unset (gated by default).

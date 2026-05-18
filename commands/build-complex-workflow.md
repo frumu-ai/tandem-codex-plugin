@@ -28,6 +28,8 @@ plan-mode loop for the **Manual / complex DAG** route.
   authentication.
 - `tool_policy.allowlist[]` and (if needed) `denylist[]`
 - `mcp_policy.allowed_servers[]` and `mcp_policy.allowed_tools[]`
+- For every MCP tool, mirror the exact `mcp.<server>.<tool>` id into
+  `tool_policy.allowlist[]`. Do not rely on server attachment alone.
 - `approval_policy` — only `"auto"` for read-only agents with no external
   side-effects. Otherwise leave it unset and rely on the engine's default
   approval gates.
@@ -38,10 +40,25 @@ plan-mode loop for the **Manual / complex DAG** route.
 - `node_id` (kebab-case)
 - `agent_id` (must match an agent above)
 - `objective` (one short sentence)
-- `prompt` (full structured prompt — use the skeleton in
+- `metadata.builder.prompt` (full structured prompt — use the skeleton in
   `skills/tandem-workflow-plan-mode/SKILL.md`)
+- `tool_policy` and `mcp_policy` for every MCP-using node. Mirror exact
+  allowed MCP tool ids into both `tool_policy.allowlist[]` and
+  `mcp_policy.allowed_tools[]`. For nodes that should have no MCP access,
+  set `mcp_policy.allowed_servers: []`, `mcp_policy.allowed_tools: []`,
+  and deny broad MCP patterns such as `mcp.notion.*` or `mcp.hunter.*`
+  when those servers are attached elsewhere in the workflow.
+- Keep local `write` in `tool_policy.allowlist[]` for output-producing
+  V2 nodes. Structured/report nodes usually need to write a run-scoped
+  artifact for their `output_contract`; deny external MCP write tools
+  separately instead of denying local artifact writes. Denying local
+  `write` can block the node at runtime with missing `artifact_write`
+  before any final artifact is produced.
 - `output_contract` (see `shared/tandem-output-contracts.md` — pick one of
-  the five patterns)
+  the five patterns). For connector-only research nodes, set
+  `enforcement.validation_profile: "artifact_only"` and require concrete
+  connector receipts with `enforcement.required_tool_calls[]`; `mcp_list`
+  or tool inventory calls do not count as research.
 - `depends_on[]` (parent node ids)
 
 ## Automation-level fields
@@ -74,6 +91,12 @@ top-level unknown fields may be ignored by the server.
 - Refuse to add a tool to `tool_policy.allowlist` that you cannot name
   exactly. If the user says "github", ask which composio/github MCP tool
   IDs (e.g. `mcp.composio.github_issues_list`).
+- When a node must use an MCP connector to do real work, require that
+  specific tool in the output contract or builder metadata. Server
+  attachment and `mcp_list` only prove availability, not task completion.
+- When revising an existing automation, state that patched definitions
+  affect only new runs. Existing runs keep their original snapshot and
+  should be restarted after policy/contract fixes.
 - For every agent that writes externally, add a comment in the per-stage
   prompt that the engine will gate this on approval.
 - If the user wants `status: "active"` immediately, ask once: "Are you
