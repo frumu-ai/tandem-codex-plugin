@@ -228,6 +228,11 @@ For each node in the DAG:
   `enforcement.required_tool_calls[]` for connector-only research nodes.
   Tool inventory calls such as `mcp_list` are setup evidence only; they
   must not be the only receipt for a research node.
+  For structured JSON MCP handoffs, include `output_contract.schema`
+  with required top-level fields so raw connector responses cannot pass
+  as workflow artifacts.
+  Do not require quota/account/check tools unless that result belongs in
+  the artifact contract.
 - `depends_on[]`
 - `metadata.builder.output_path` when the node has an external
   side-effect or a downstream node must read a durable receipt/artifact.
@@ -374,7 +379,12 @@ TASK:
 - <ordered steps>
 - For MCP research: name the concrete `mcp.<server>.<tool>` calls that
   must happen. If there is an empty-work path, state it explicitly and
-  make the output shape for that path unambiguous.
+  make the output shape for that path unambiguous. If no upstream work is
+  present, tell the node to write the empty schema-shaped artifact and
+  skip external connector calls.
+- For MCP arguments: include exact required argument examples from the
+  tool schema. If an empty string is the intended value for a required
+  string field, write it explicitly, e.g. `query: ""`.
 
 CONSTRAINTS:
 - <tool/MCP scope, time budget, approval gates, no-go list>

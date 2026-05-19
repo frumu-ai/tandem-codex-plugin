@@ -26,6 +26,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added connector-only research guidance for `artifact_only` validation
   and `required_tool_calls[]`, so `mcp_list`/tool inventory receipts do
   not satisfy research stages by themselves.
+- Added MCP handoff guidance to use `output_contract.schema`, avoid
+  account/quota checks on empty-work paths, and spell out required tool
+  arguments such as `query: ""`.
 - Added runtime debugging guidance that V2 runs are snapshot-based,
   patched automation definitions only affect new runs, and unclear
   blockers should be traced through `checkpoint.lifecycle_history`.

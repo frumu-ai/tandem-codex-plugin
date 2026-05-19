@@ -105,9 +105,18 @@ Default to **gated** for any external write. See
   }
   ```
 - If a connector stage has an empty-work path, make that path explicit in
-  the prompt and require a harmless access/check call when available
-  (for example `mcp.<server>.account`) so the receipt cannot be
-  `mcp_list`-only.
+  the prompt and output schema. Do not require quota/account/check tools
+  unless their result is part of the artifact contract; empty-work paths
+  should write the empty schema-shaped artifact without spending external
+  connector calls.
+- For `structured_json` MCP handoff nodes, include an
+  `output_contract.schema` with required top-level fields. Raw MCP
+  account/quota/search responses are valid JSON, but they are not valid
+  workflow artifacts unless they match this schema.
+- When a connector tool schema requires an argument, put the exact
+  argument shape in the node prompt. If the tool requires a string and
+  the desired value is empty, say so explicitly, for example
+  `query: ""`; do not rely on omitting the field.
 - Avoid `allowed_servers[]` and wildcard grants (`mcp.<server>.*`) for
   safety-critical side-effect stages. Prefer:
   ```json

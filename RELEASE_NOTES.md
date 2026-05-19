@@ -24,6 +24,9 @@ What's changed:
 - Connector-only research nodes now get guidance for
   `artifact_only` validation and `required_tool_calls[]`, making
   `mcp_list`/tool inventory receipts insufficient as research evidence.
+- MCP handoff guidance now requires structured JSON schemas, avoids
+  account/quota checks on empty-work paths, and calls out exact required
+  argument examples such as `query: ""`.
 - Runtime guidance now calls out frozen V2 run snapshots and points
   blocked-run debugging at `checkpoint.lifecycle_history` when the UI or
   top-level run fields do not show the actionable reason.
