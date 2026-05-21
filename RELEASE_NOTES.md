@@ -2,19 +2,13 @@
 
 This is the canonical release-notes file used by release tooling.
 
-## v0.1.4
+## v0.1.5
 
-This release tightens the Tandem V2 automation authoring guidance to match
-the current engine schema.
+This release moves the post-`0.1.4` workflow guardrail refinements into a
+new patch version and keeps the already-published `0.1.4` notes intact.
 
 What's changed:
 
-- V2 node prompts are now documented under `metadata.builder.prompt`.
-- V2 external-write governance now avoids the legacy
-  `external_integrations_allowed` field unless an installed engine
-  explicitly validates it.
-- Approval-gate guidance now emphasizes exact tool/MCP allowlists, node
-  gates, and `handoff_config.auto_approve: false` for V2 workflows.
 - V2 MCP safety guidance now requires node-level `tool_policy` and
   `mcp_policy` when servers are attached at workflow/run level, so each
   task only receives the exact tools it needs.
@@ -30,6 +24,20 @@ What's changed:
 - Runtime guidance now calls out frozen V2 run snapshots and points
   blocked-run debugging at `checkpoint.lifecycle_history` when the UI or
   top-level run fields do not show the actionable reason.
+
+## v0.1.4
+
+This release tightens the Tandem V2 automation authoring guidance to match
+the current engine schema.
+
+What's changed:
+
+- V2 node prompts are now documented under `metadata.builder.prompt`.
+- V2 external-write governance now avoids the legacy
+  `external_integrations_allowed` field unless an installed engine
+  explicitly validates it.
+- Approval-gate guidance now emphasizes exact tool/MCP allowlists, node
+  gates, and `handoff_config.auto_approve: false` for V2 workflows.
 
 ## v0.1.3
 
